@@ -59,9 +59,7 @@ func (m *MockUserRepository) UpdateUser(s string, user domain.User) (domain.User
 }
 
 func (m *MockUserRepository) DeleteUser(s string) error {
-	if _, ok := m.users[s]; ok {
-		delete(m.users, s)
-	}
+	delete(m.users, s)
 	return nil
 }
 
