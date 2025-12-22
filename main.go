@@ -1,6 +1,7 @@
 package main
 
 import (
+	"UserApi/internal/adapters/db"
 	"UserApi/internal/adapters/http"
 	"UserApi/internal/adapters/service"
 	"UserApi/internal/core/ports"
@@ -9,8 +10,8 @@ import (
 )
 
 func main() {
-
-	var userService ports.UserService = service.NewMockUserServiceImpl()
+	var userRepository ports.UserRepository = db.NewMockUserRepository()
+	var userService ports.UserService = service.NewUserService(userRepository)
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)
 	r.Use(middleware.Logger)
