@@ -1,9 +1,9 @@
 package db
 
 import (
-	"UserApi/internal/core/domain"
 	"errors"
 	"github.com/google/uuid"
+	"userapi/app/internal/core/domain"
 )
 
 type MockUserRepository struct {

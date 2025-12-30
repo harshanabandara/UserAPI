@@ -1,9 +1,9 @@
 package service
 
 import (
-	"UserApi/internal/core/domain"
-	"UserApi/internal/core/ports"
 	"errors"
+	"userapi/app/internal/core/domain"
+	"userapi/app/internal/core/ports"
 )
 
 type UserServiceImpl struct {

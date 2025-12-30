@@ -1,11 +1,11 @@
 package db
 
 import (
-	"UserApi/internal/core/domain"
 	"database/sql"
 	"errors"
 	"fmt"
 	"strings"
+	"userapi/app/internal/core/domain"
 )
 
 type UserRepositoryImpl struct {

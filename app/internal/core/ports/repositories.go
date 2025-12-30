@@ -1,6 +1,8 @@
 package ports
 
-import "UserApi/internal/core/domain"
+import (
+	"userapi/app/internal/core/domain"
+)
 
 type UserRepository interface {
 	Init() error

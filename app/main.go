@@ -1,10 +1,6 @@
 package main
 
 import (
-	"UserApi/internal/adapters/db"
-	"UserApi/internal/adapters/http"
-	"UserApi/internal/adapters/service"
-	"UserApi/internal/core/ports"
 	"database/sql"
 	"fmt"
 	"github.com/go-chi/chi/v5"
@@ -12,6 +8,10 @@ import (
 	_ "github.com/lib/pq"
 	"log"
 	"os"
+	"userapi/app/internal/adapters/db"
+	"userapi/app/internal/adapters/http"
+	"userapi/app/internal/adapters/service"
+	"userapi/app/internal/core/ports"
 )
 
 func getEnv(key, fallback string) string {

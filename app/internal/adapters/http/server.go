@@ -1,11 +1,11 @@
 package http
 
 import (
-	"UserApi/internal/core/domain"
-	"UserApi/internal/core/ports"
 	"encoding/json"
 	"github.com/go-chi/chi/v5"
 	"net/http"
+	"userapi/app/internal/core/domain"
+	"userapi/app/internal/core/ports"
 )
 
 type Server struct {

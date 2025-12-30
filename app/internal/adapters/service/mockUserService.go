@@ -1,8 +1,8 @@
 package service
 
 import (
-	"UserApi/internal/core/domain"
 	"errors"
+	"userapi/app/internal/core/domain"
 
 	"github.com/google/uuid"
 )

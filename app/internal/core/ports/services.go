@@ -1,7 +1,7 @@
 package ports
 
 import (
-	"UserApi/internal/core/domain"
+	"userapi/app/internal/core/domain"
 )
 
 type UserService interface {
