@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -16,7 +17,7 @@ func NewSQLUserRepository(db *sql.DB) *UserRepositoryImpl {
 	return &UserRepositoryImpl{db: db}
 }
 
-func (u *UserRepositoryImpl) RetrieveUser(userID string) (domain.User, error) {
+func (u *UserRepositoryImpl) RetrieveUser(ctx context.Context, userID string) (domain.User, error) {
 	query := "SELECT user_id, first_name, last_name, email, age, status FROM users WHERE user_id = $1"
 
 	var user domain.User
@@ -37,7 +38,7 @@ func (u *UserRepositoryImpl) RetrieveUser(userID string) (domain.User, error) {
 	return user, nil
 }
 
-func (u *UserRepositoryImpl) CreateUser(user domain.User) (domain.User, error) {
+func (u *UserRepositoryImpl) CreateUser(ctx context.Context, user domain.User) (domain.User, error) {
 	query := "INSERT INTO users (first_name, last_name, email, age, phone) VALUES ($1, $2, $3, $4, $5) RETURNING user_id"
 	var id string
 
@@ -49,7 +50,7 @@ func (u *UserRepositoryImpl) CreateUser(user domain.User) (domain.User, error) {
 	return user, nil
 }
 
-func (u *UserRepositoryImpl) UpdateUser(userId string, user domain.User) (domain.User, error) {
+func (u *UserRepositoryImpl) UpdateUser(ctx context.Context, userId string, user domain.User) (domain.User, error) {
 	if userId == "" {
 		return domain.User{}, errors.New("user id is required")
 	}
@@ -100,7 +101,7 @@ func (u *UserRepositoryImpl) UpdateUser(userId string, user domain.User) (domain
 
 }
 
-func (u *UserRepositoryImpl) DeleteUser(userId string) error {
+func (u *UserRepositoryImpl) DeleteUser(ctx context.Context, userId string) error {
 	query := "DELETE FROM users WHERE user_id = $1"
 	_, err := u.db.Exec(query, userId)
 	if err != nil {
@@ -109,11 +110,11 @@ func (u *UserRepositoryImpl) DeleteUser(userId string) error {
 	return nil
 }
 
-func (u *UserRepositoryImpl) Init() error {
+func (u *UserRepositoryImpl) Init(ctx context.Context) error {
 	return nil
 }
 
-func (u *UserRepositoryImpl) RetrieveAllUsers() ([]domain.User, error) {
+func (u *UserRepositoryImpl) RetrieveAllUsers(ctx context.Context) ([]domain.User, error) {
 	query := "SELECT user_id, first_name, last_name, email, age, status FROM users"
 	rows, err := u.db.Query(query)
 	if err != nil {
