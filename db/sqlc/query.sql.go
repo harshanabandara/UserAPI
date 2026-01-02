@@ -3,11 +3,12 @@
 //   sqlc v1.30.0
 // source: query.sql
 
-package db
+package sqlc
 
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -26,7 +27,7 @@ type CreateUserParams struct {
 	Email     string
 	Phone     pgtype.Text
 	Age       pgtype.Int4
-	Status    interface{}
+	Status    NullUserStatus
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
@@ -51,11 +52,49 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 	return i, err
 }
 
+const createUserDefault = `-- name: CreateUserDefault :one
+INSERT INTO users (
+    first_name, last_name, email, phone, age
+) VALUES (
+             $1, $2, $3,$4, $5
+          )
+RETURNING user_id, first_name, last_name, email, phone, age, status
+`
+
+type CreateUserDefaultParams struct {
+	FirstName string
+	LastName  string
+	Email     string
+	Phone     pgtype.Text
+	Age       pgtype.Int4
+}
+
+func (q *Queries) CreateUserDefault(ctx context.Context, arg CreateUserDefaultParams) (User, error) {
+	row := q.db.QueryRow(ctx, createUserDefault,
+		arg.FirstName,
+		arg.LastName,
+		arg.Email,
+		arg.Phone,
+		arg.Age,
+	)
+	var i User
+	err := row.Scan(
+		&i.UserID,
+		&i.FirstName,
+		&i.LastName,
+		&i.Email,
+		&i.Phone,
+		&i.Age,
+		&i.Status,
+	)
+	return i, err
+}
+
 const deleteUserById = `-- name: DeleteUserById :exec
 DELETE FROM users WHERE user_id = $1
 `
 
-func (q *Queries) DeleteUserById(ctx context.Context, userID pgtype.UUID) error {
+func (q *Queries) DeleteUserById(ctx context.Context, userID uuid.UUID) error {
 	_, err := q.db.Exec(ctx, deleteUserById, userID)
 	return err
 }
@@ -96,7 +135,7 @@ const retrieveUserById = `-- name: RetrieveUserById :one
 SELECT user_id, first_name, last_name, email, phone, age, status FROM users WHERE user_id = $1 LIMIT 1
 `
 
-func (q *Queries) RetrieveUserById(ctx context.Context, userID pgtype.UUID) (User, error) {
+func (q *Queries) RetrieveUserById(ctx context.Context, userID uuid.UUID) (User, error) {
 	row := q.db.QueryRow(ctx, retrieveUserById, userID)
 	var i User
 	err := row.Scan(
@@ -131,8 +170,8 @@ type UpdateUserByIdParams struct {
 	Email     string
 	Age       pgtype.Int4
 	Phone     pgtype.Text
-	Status    interface{}
-	UserID    pgtype.UUID
+	Status    NullUserStatus
+	UserID    uuid.UUID
 }
 
 func (q *Queries) UpdateUserById(ctx context.Context, arg UpdateUserByIdParams) error {
@@ -146,4 +185,60 @@ func (q *Queries) UpdateUserById(ctx context.Context, arg UpdateUserByIdParams) 
 		arg.UserID,
 	)
 	return err
+}
+
+const updateUserPartial = `-- name: UpdateUserPartial :one
+UPDATE users
+SET
+    first_name = COALESCE($1, first_name),
+    last_name  = COALESCE($2, last_name),
+    email      = COALESCE($3, email),
+    age        = COALESCE($4, age),
+    phone      = COALESCE($5, phone),
+    status     = COALESCE($6, status)
+WHERE user_id = $7
+RETURNING user_id, first_name, last_name, email, age, phone, status
+`
+
+type UpdateUserPartialParams struct {
+	FirstName pgtype.Text
+	LastName  pgtype.Text
+	Email     pgtype.Text
+	Age       pgtype.Int4
+	Phone     pgtype.Text
+	Status    NullUserStatus
+	UserID    uuid.UUID
+}
+
+type UpdateUserPartialRow struct {
+	UserID    uuid.UUID
+	FirstName string
+	LastName  string
+	Email     string
+	Age       pgtype.Int4
+	Phone     pgtype.Text
+	Status    NullUserStatus
+}
+
+func (q *Queries) UpdateUserPartial(ctx context.Context, arg UpdateUserPartialParams) (UpdateUserPartialRow, error) {
+	row := q.db.QueryRow(ctx, updateUserPartial,
+		arg.FirstName,
+		arg.LastName,
+		arg.Email,
+		arg.Age,
+		arg.Phone,
+		arg.Status,
+		arg.UserID,
+	)
+	var i UpdateUserPartialRow
+	err := row.Scan(
+		&i.UserID,
+		&i.FirstName,
+		&i.LastName,
+		&i.Email,
+		&i.Age,
+		&i.Phone,
+		&i.Status,
+	)
+	return i, err
 }

@@ -1,18 +1,19 @@
-DO $$
-    BEGIN
-        IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'user_status') THEN
-            CREATE TYPE user_status AS ENUM ('ACTIVE', 'INACTIVE');
-        END IF;
-    END$$;
+-- DO $$
+--     BEGIN
+--         IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'user_status') THEN
+--             CREATE TYPE user_status AS ENUM ('ACTIVE', 'INACTIVE');
+--         END IF;
+--     END$$;
+CREATE TYPE user_status AS ENUM ('ACTIVE', 'INACTIVE');
 CREATE TABLE IF NOT EXISTS  users (
                                       user_id   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
                                       first_name VARCHAR(50) NOT NULL,
                                       last_name  VARCHAR(50) NOT NULL,
-                                      email      VARCHAR(255) NOT NULL,
+                                      email      VARCHAR(256) NOT NULL,
                                       phone      VARCHAR(20),
                                       age        INTEGER,
-                                      status     user_status NOT NULL DEFAULT 'ACTIVE',
+                                      status     user_status DEFAULT 'ACTIVE',
 
                                       CONSTRAINT first_name_len CHECK (char_length(first_name) BETWEEN 2 AND 50),
                                       CONSTRAINT last_name_len  CHECK (char_length(last_name)  BETWEEN 2 AND 50),
