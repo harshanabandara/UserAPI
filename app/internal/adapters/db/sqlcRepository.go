@@ -26,6 +26,7 @@ func (s *SqlcRepository) CreateUser(ctx context.Context, user domain.User) (doma
 		return domain.User{}, err
 	}
 	user.UserID = newUser.UserID.String()
+	user = getUserFromUserRecord(newUser)
 
 	return user, nil
 }
@@ -39,15 +40,7 @@ func (s *SqlcRepository) RetrieveUser(ctx context.Context, userId string) (domai
 	if err != nil {
 		return domain.User{}, err
 	}
-	returnUser := domain.User{
-		UserID:    user.UserID.String(),
-		FirstName: user.FirstName,
-		LastName:  user.LastName,
-		Email:     user.Email,
-		Phone:     getStringFromTextRecord(user.Phone),
-		Age:       int(user.Age.Int32),
-		Status:    getUserStatusFromStatusRecord(user.Status),
-	}
+	returnUser := getUserFromUserRecord(user)
 	return returnUser, nil
 }
 
@@ -119,6 +112,7 @@ func (s *SqlcRepository) UpdateUser(ctx context.Context, userId string, user dom
 	if err != nil {
 		return domain.User{}, err
 	}
+
 	returnUser := domain.User{
 		UserID:    row.UserID.String(),
 		FirstName: row.FirstName,

@@ -97,12 +97,16 @@ func postUser(service ports.UserService) http.HandlerFunc {
 			_, _ = w.Write([]byte("Could not create user"))
 			return
 		}
-
-		err = json.NewEncoder(w).Encode(createdUser)
+		parsedUser := parseUserToUserDTO(createdUser)
+		blob, err := json.Marshal(parsedUser)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte(err.Error()))
+			return
 		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusCreated)
+		_, _ = w.Write(blob)
 	}
 }
 
@@ -126,7 +130,10 @@ func patchUser(service ports.UserService) http.HandlerFunc {
 		w.WriteHeader(http.StatusOK)
 		blob, _ := json.Marshal(updateUser)
 		w.Header().Set("Content-Type", "application/json")
-		_, _ = w.Write(blob)
+		_, err = w.Write(blob)
+		if err != nil {
+			return
+		}
 	}
 }
 
