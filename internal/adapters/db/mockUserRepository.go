@@ -1,9 +1,10 @@
 package db
 
 import (
-	"UserApi/internal/core/domain"
+	"context"
 	"errors"
 	"github.com/google/uuid"
+	"userapi/app/internal/core/domain"
 )
 
 type MockUserRepository struct {
@@ -18,21 +19,21 @@ func generateUUID() string {
 	return uuid.New().String()
 }
 
-func (m *MockUserRepository) RetrieveUser(s string) (domain.User, error) {
+func (m *MockUserRepository) RetrieveUser(ctx context.Context, s string) (domain.User, error) {
 	if user, ok := m.users[s]; ok {
 		return user, nil
 	}
 	return domain.User{}, errors.New("user not found")
 }
 
-func (m *MockUserRepository) CreateUser(user domain.User) (domain.User, error) {
+func (m *MockUserRepository) CreateUser(ctx context.Context, user domain.User) (domain.User, error) {
 	userId := generateUUID()
 	user.UserID = userId
 	m.users[userId] = user
 	return user, nil
 }
 
-func (m *MockUserRepository) UpdateUser(s string, user domain.User) (domain.User, error) {
+func (m *MockUserRepository) UpdateUser(ctx context.Context, s string, user domain.User) (domain.User, error) {
 	//get the user.
 	currentUser, ok := m.users[s]
 	if !ok {
@@ -58,12 +59,12 @@ func (m *MockUserRepository) UpdateUser(s string, user domain.User) (domain.User
 	return currentUser, nil
 }
 
-func (m *MockUserRepository) DeleteUser(s string) error {
+func (m *MockUserRepository) DeleteUser(ctx context.Context, s string) error {
 	delete(m.users, s)
 	return nil
 }
 
-func (m *MockUserRepository) RetrieveAllUsers() ([]domain.User, error) {
+func (m *MockUserRepository) RetrieveAllUsers(ctx context.Context) ([]domain.User, error) {
 	users := make([]domain.User, len(m.users))
 	for _, user := range m.users {
 		users = append(users, user)
@@ -71,6 +72,6 @@ func (m *MockUserRepository) RetrieveAllUsers() ([]domain.User, error) {
 	return users, nil
 }
 
-func (m *MockUserRepository) Init() error {
+func (m *MockUserRepository) Init(ctx context.Context) error {
 	return nil
 }

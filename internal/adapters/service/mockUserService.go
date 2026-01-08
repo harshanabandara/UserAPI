@@ -1,8 +1,9 @@
 package service
 
 import (
-	"UserApi/internal/core/domain"
+	"context"
 	"errors"
+	"userapi/app/internal/core/domain"
 
 	"github.com/google/uuid"
 )
@@ -19,14 +20,14 @@ func generateUUID() string {
 	return uuid.New().String()
 }
 
-func (m MockUserServiceImpl) AddUser(user domain.User) (domain.User, error) {
+func (m MockUserServiceImpl) AddUser(ctx context.Context, user domain.User) (domain.User, error) {
 	userId := generateUUID()
 	user.UserID = userId
 	m.users[userId] = user
 	return user, nil
 }
 
-func (m MockUserServiceImpl) GetUserById(s string) (domain.User, error) {
+func (m MockUserServiceImpl) GetUserById(ctx context.Context, s string) (domain.User, error) {
 	user, ok := m.users[s]
 	if !ok {
 		return user, errors.New("user not found")
@@ -34,7 +35,7 @@ func (m MockUserServiceImpl) GetUserById(s string) (domain.User, error) {
 	return user, nil
 }
 
-func (m MockUserServiceImpl) UpdateUserByID(s string, user domain.User) (domain.User, error) {
+func (m MockUserServiceImpl) UpdateUserByID(ctx context.Context, s string, user domain.User) (domain.User, error) {
 	currUser, ok := m.users[s]
 	if !ok {
 		return user, errors.New("user not found")
@@ -61,12 +62,12 @@ func (m MockUserServiceImpl) UpdateUserByID(s string, user domain.User) (domain.
 	return currUser, nil
 }
 
-func (m MockUserServiceImpl) DeleteUserByID(s string) error {
+func (m MockUserServiceImpl) DeleteUserByID(ctx context.Context, s string) error {
 	delete(m.users, s)
 	return nil
 }
 
-func (m MockUserServiceImpl) GetAllUsers() ([]domain.User, error) {
+func (m MockUserServiceImpl) GetAllUsers(ctx context.Context) ([]domain.User, error) {
 	users := make([]domain.User, len(m.users))
 	for _, user := range m.users {
 		users = append(users, user)

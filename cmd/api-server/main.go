@@ -1,17 +1,19 @@
 package main
 
 import (
-	"UserApi/internal/adapters/db"
-	"UserApi/internal/adapters/http"
-	"UserApi/internal/adapters/service"
-	"UserApi/internal/core/ports"
-	"database/sql"
+	"context"
 	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/lib/pq"
 	"log"
 	"os"
+	"userapi/app/internal/adapters/db"
+	"userapi/app/internal/adapters/db/user"
+	"userapi/app/internal/adapters/http"
+	"userapi/app/internal/adapters/service"
+	"userapi/app/internal/core/ports"
 )
 
 func getEnv(key, fallback string) string {
@@ -29,13 +31,15 @@ func main() {
 	sslmode := getEnv("PG_SSLMODE", "disable")
 
 	connStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s", host, port, user, password, databaseName, sslmode)
-	database, err := sql.Open("postgres", connStr)
+	pool, err := pgxpool.New(context.Background(), connStr)
 	if err != nil {
 		log.Fatal(err)
+		return
 	}
-	defer database.Close()
+	defer pool.Close()
+	queries := sqlc.New(pool)
+	var userRepository ports.UserRepository = db.NewSqlcRepository(queries)
 
-	var userRepository ports.UserRepository = db.NewSQLUserRepository(database)
 	var userService ports.UserService = service.NewUserService(userRepository)
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)

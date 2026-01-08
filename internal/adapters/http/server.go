@@ -1,11 +1,11 @@
 package http
 
 import (
-	"UserApi/internal/core/domain"
-	"UserApi/internal/core/ports"
 	"encoding/json"
 	"github.com/go-chi/chi/v5"
 	"net/http"
+	"userapi/app/internal/core/domain"
+	"userapi/app/internal/core/ports"
 )
 
 type Server struct {
@@ -33,9 +33,13 @@ func (server *Server) Start() error {
 
 func getAllUsers(service ports.UserService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		users, err := service.GetAllUsers()
+		users, err := service.GetAllUsers(r.Context())
 		if err != nil {
 			panic(err)
+		}
+		userDTOs := make([]UserDTO, len(users))
+		for i, user := range users {
+			userDTOs[i] = parseUserToUserDTO(user)
 		}
 		blob, err := json.Marshal(users)
 		if err != nil {
@@ -52,13 +56,14 @@ func getAllUsers(service ports.UserService) http.HandlerFunc {
 func getUser(userService ports.UserService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userID := chi.URLParam(r, "userId")
-		user, err := userService.GetUserById(userID)
+		user, err := userService.GetUserById(r.Context(), userID)
+		userDTO := parseUserToUserDTO(user)
 		if err != nil {
 			w.WriteHeader(http.StatusNotFound)
 			_, _ = w.Write([]byte(err.Error()))
 			return
 		}
-		blob, _ := json.Marshal(user)
+		blob, _ := json.Marshal(userDTO)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, err = w.Write(blob)
@@ -80,7 +85,7 @@ func postUser(service ports.UserService) http.HandlerFunc {
 			_, _ = w.Write([]byte(err.Error()))
 			return
 		}
-		createdUser, err := service.AddUser(user)
+		createdUser, err := service.AddUser(r.Context(), user)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte(err.Error()))
@@ -92,12 +97,16 @@ func postUser(service ports.UserService) http.HandlerFunc {
 			_, _ = w.Write([]byte("Could not create user"))
 			return
 		}
-
-		err = json.NewEncoder(w).Encode(createdUser)
+		parsedUser := parseUserToUserDTO(createdUser)
+		blob, err := json.Marshal(parsedUser)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte(err.Error()))
+			return
 		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusCreated)
+		_, _ = w.Write(blob)
 	}
 }
 
@@ -111,7 +120,7 @@ func patchUser(service ports.UserService) http.HandlerFunc {
 			_, _ = w.Write([]byte(err.Error()))
 			return
 		}
-		updateUser, err := service.UpdateUserByID(userID, user)
+		updateUser, err := service.UpdateUserByID(r.Context(), userID, user)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte(err.Error()))
@@ -121,7 +130,10 @@ func patchUser(service ports.UserService) http.HandlerFunc {
 		w.WriteHeader(http.StatusOK)
 		blob, _ := json.Marshal(updateUser)
 		w.Header().Set("Content-Type", "application/json")
-		_, _ = w.Write(blob)
+		_, err = w.Write(blob)
+		if err != nil {
+			return
+		}
 	}
 }
 
@@ -129,7 +141,7 @@ func deleteUser(service ports.UserService) http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		userID := chi.URLParam(r, "userId")
-		err := service.DeleteUserByID(userID)
+		err := service.DeleteUserByID(r.Context(), userID)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte(err.Error()))

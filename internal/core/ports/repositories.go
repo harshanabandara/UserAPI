@@ -1,12 +1,15 @@
 package ports
 
-import "UserApi/internal/core/domain"
+import (
+	"context"
+	"userapi/app/internal/core/domain"
+)
 
 type UserRepository interface {
-	Init() error
-	CreateUser(domain.User) (domain.User, error)
-	RetrieveUser(string) (domain.User, error)
-	RetrieveAllUsers() ([]domain.User, error)
-	UpdateUser(string, domain.User) (domain.User, error)
-	DeleteUser(string) error
+	Init(ctx context.Context) error
+	CreateUser(context.Context, domain.User) (domain.User, error)
+	RetrieveUser(context.Context, string) (domain.User, error)
+	RetrieveAllUsers(context.Context) ([]domain.User, error)
+	UpdateUser(context.Context, string, domain.User) (domain.User, error)
+	DeleteUser(context.Context, string) error
 }

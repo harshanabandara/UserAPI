@@ -1,13 +1,14 @@
 package ports
 
 import (
-	"UserApi/internal/core/domain"
+	"context"
+	"userapi/app/internal/core/domain"
 )
 
 type UserService interface {
-	AddUser(user domain.User) (domain.User, error)
-	GetUserById(string) (domain.User, error)
-	GetAllUsers() ([]domain.User, error)
-	UpdateUserByID(string, domain.User) (domain.User, error)
-	DeleteUserByID(string) error
+	AddUser(context.Context, domain.User) (domain.User, error)
+	GetUserById(context.Context, string) (domain.User, error)
+	GetAllUsers(context.Context) ([]domain.User, error)
+	UpdateUserByID(context.Context, string, domain.User) (domain.User, error)
+	DeleteUserByID(context.Context, string) error
 }
