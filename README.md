@@ -32,6 +32,17 @@ docker buildx build --platform linux/amd64,linux/arm64 -t userapi:latest .
 docker build -t userapi .
 ```
 
+Following environment variables can be passed into the docker container to override initial values.
+
+| Key           | default   | note                                     |
+|---------------|-----------|------------------------------------------|
+| PG_HOST       | localhost | the hostname of the db server            |
+| PG_PORT"      | 5432      | the listening port of the datbase server |
+| PG_USER"      | postgres  | username for the database                |
+| PG_PASSWORD"  | yaalalabs | password of the database                 |
+| PG_DATABASE   | userapi   | database name                            |                             
+| PG_SSLMODE    | disable   | ssl mode                                 |
+
 if you want to push as you build, run below command. 
 ```bash
 docker buildx build --platform linux/amd64,linux/arm64 -t $dockerhub_username/userapi:latest --push .
@@ -51,3 +62,5 @@ Documentation will be generated in .docs directory.
 ```
 swag init -g ./cmd/api-server/main.go -d  . --parseInternal
 ```
+
+
