@@ -12,8 +12,24 @@ When you're ready, start your application by running:
 ```
 docker compose up --build
 ```
-#### build the project locally
+### build the project locally
 
+#### Database query generation
+to generate/update database query helpers, run the following commands.
+```bash
+cd config/database
+sqlc generate
+```
+generated database files will be in `internal/adapters/db/user` directory.
+
+#### SWAG API Documentation
+To generate/update api documentation, run the following command.
+Documentation will be generated in .docs directory.
+```
+swag init -g ./cmd/api-server/main.go -d  . --parseInternal
+```
+#### Build the project
+Once the above files are updated, run the below command. 
 ```bash
 cd cmd/api-server
 go build .
@@ -46,21 +62,6 @@ Following environment variables can be passed into the docker container to overr
 if you want to push as you build, run below command. 
 ```bash
 docker buildx build --platform linux/amd64,linux/arm64 -t $dockerhub_username/userapi:latest --push .
-```
-
-### Database query generation
-to generate database query helpers, run the following commands. 
-```bash
-cd config/database
-sqlc generate
-```
-generated database files will be in `nternal/adapters/db/user` directory. 
-
-### SWAG API Documentation 
-To generate api documentation, run the following command. 
-Documentation will be generated in .docs directory.
-```
-swag init -g ./cmd/api-server/main.go -d  . --parseInternal
 ```
 
 
