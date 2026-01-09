@@ -185,7 +185,6 @@ func patchUser(service ports.UserService, validator *validator.Validate) http.Ha
 			_, _ = w.Write([]byte(validationErr.Error()))
 			return
 		}
-		fmt.Println("user", user.getUser())
 		updateUser, err := service.UpdateUserByID(r.Context(), userID, user.getUser())
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
