@@ -2,6 +2,7 @@ package http
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-playground/validator/v10"
@@ -54,7 +55,10 @@ func getAllUsers(service ports.UserService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		users, err := service.GetAllUsers(r.Context())
 		if err != nil {
-			panic(err)
+			serverErr := fmt.Errorf("error getting all users: %w", err)
+			fmt.Println(serverErr)
+			http.Error(w, errors.New("could not retrieve the users").Error(), http.StatusInternalServerError)
+			return
 		}
 		userDTOs := make([]UserResponse, len(users))
 		for i, user := range users {
@@ -62,13 +66,13 @@ func getAllUsers(service ports.UserService) http.HandlerFunc {
 		}
 		blob, err := json.Marshal(users)
 		if err != nil {
-			panic(err)
-		}
-		w.Header().Set("Content-Type", "application/json")
-		_, err = w.Write(blob)
-		if err != nil {
+			marshalErr := fmt.Errorf("error marshalling users: %w", err)
+			fmt.Println(marshalErr)
+			http.Error(w, errors.New("could not retrieve the users").Error(), http.StatusInternalServerError)
 			return
 		}
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write(blob)
 	}
 }
 
@@ -87,21 +91,25 @@ func getUser(userService ports.UserService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userID := chi.URLParam(r, "userId")
 		user, err := userService.GetUserById(r.Context(), userID)
-		userDTO := parseUserToUserDTO(user)
 		if err != nil {
+			serverErr := fmt.Errorf("could not retrieve the user: %w", err)
+			fmt.Println(serverErr)
+			notFoundErr := fmt.Errorf("could not retrieve the user %s", userID)
 			w.WriteHeader(http.StatusNotFound)
-			_, _ = w.Write([]byte(err.Error()))
+			_, _ = w.Write([]byte(notFoundErr.Error()))
 			return
 		}
-		blob, _ := json.Marshal(userDTO)
+		userDTO := parseUserToUserDTO(user)
+		blob, err := json.Marshal(userDTO)
+		if err != nil {
+			marshalErr := fmt.Errorf("error marshalling user: %w", err)
+			fmt.Println(marshalErr)
+			http.Error(w, errors.New("could not retrieve the user").Error(), http.StatusInternalServerError)
+			return
+		}
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		_, err = w.Write(blob)
-		if err != nil {
-			//log something here.
-			return
-		}
-
+		_, _ = w.Write(blob)
 	}
 }
 
@@ -122,32 +130,41 @@ func postUser(service ports.UserService, validator *validator.Validate) http.Han
 		err := json.NewDecoder(r.Body).Decode(&user)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			_, _ = w.Write([]byte(err.Error()))
+			decodeError := fmt.Errorf("could not decode the request body: %w", err)
+			fmt.Println(decodeError)
+			_, _ = w.Write([]byte(decodeError.Error()))
 			return
 		}
 		validationErr := validator.Struct(user)
 		if validationErr != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			_, _ = w.Write([]byte(validationErr.Error()))
+			validationErr2 := fmt.Errorf("could not validate the request: %w", validationErr)
+			fmt.Println(validationErr2)
+			_, _ = w.Write([]byte(validationErr2.Error()))
 			return
 		}
 		createdUser, err := service.AddUser(r.Context(), user.getUser())
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			_, _ = w.Write([]byte(err.Error()))
+			userErr := fmt.Errorf("could not add the user: %w", err)
+			fmt.Println(userErr)
+
+			_, _ = w.Write([]byte(errors.New("could not add the user").Error()))
 			return
 		}
 		// check the user id.
 		if createdUser.UserID == "" {
 			w.WriteHeader(http.StatusInternalServerError)
-			_, _ = w.Write([]byte("Could not create user"))
+			_, _ = w.Write([]byte(errors.New("could not create user").Error()))
 			return
 		}
 		parsedUser := parseUserToUserDTO(createdUser)
 		blob, err := json.Marshal(parsedUser)
 		if err != nil {
+			parsingErr := fmt.Errorf("could not parse the user: %w", err)
+			fmt.Println(parsingErr)
 			w.WriteHeader(http.StatusInternalServerError)
-			_, _ = w.Write([]byte(err.Error()))
+			_, _ = w.Write([]byte(errors.New("could not retrieve the user").Error()))
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
@@ -173,10 +190,11 @@ func patchUser(service ports.UserService, validator *validator.Validate) http.Ha
 		user := UserRequest{}
 
 		err := json.NewDecoder(r.Body).Decode(&user)
-		fmt.Println("user", user)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			_, _ = w.Write([]byte(err.Error()))
+			decodeError := fmt.Errorf("could not decode the request body: %w", err)
+			fmt.Println(decodeError)
+			_, _ = w.Write([]byte(decodeError.Error()))
 			return
 		}
 		validationErr := validator.Struct(user)
@@ -188,7 +206,9 @@ func patchUser(service ports.UserService, validator *validator.Validate) http.Ha
 		updateUser, err := service.UpdateUserByID(r.Context(), userID, user.getUser())
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			_, _ = w.Write([]byte(err.Error()))
+			userErr := fmt.Errorf("could not update user: %w", err)
+			fmt.Println(userErr)
+			_, _ = w.Write([]byte(errors.New("could not update user").Error()))
 			return
 		}
 		userDTO := parseUserToUserDTO(updateUser)
@@ -219,8 +239,10 @@ func deleteUser(service ports.UserService) http.HandlerFunc {
 		userID := chi.URLParam(r, "userId")
 		err := service.DeleteUserByID(r.Context(), userID)
 		if err != nil {
+			deleteErr := fmt.Errorf("could not delete user: %w", err)
+			fmt.Println(deleteErr)
 			w.WriteHeader(http.StatusInternalServerError)
-			_, _ = w.Write([]byte(err.Error()))
+			_, _ = w.Write([]byte(errors.New("could not delete user").Error()))
 			return
 		}
 		w.WriteHeader(http.StatusOK)
