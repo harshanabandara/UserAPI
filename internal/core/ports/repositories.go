@@ -6,7 +6,6 @@ import (
 )
 
 type UserRepository interface {
-	Init(ctx context.Context) error
 	CreateUser(context.Context, domain.User) (domain.User, error)
 	RetrieveUser(context.Context, string) (domain.User, error)
 	RetrieveAllUsers(context.Context) ([]domain.User, error)

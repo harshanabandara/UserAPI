@@ -120,7 +120,12 @@ func (u *UserRepositoryImpl) RetrieveAllUsers(ctx context.Context) ([]domain.Use
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func(rows *sql.Rows) {
+		err := rows.Close()
+		if err != nil {
+			fmt.Println(err) // will change
+		}
+	}(rows)
 
 	var users []domain.User
 	var inactive = domain.INACTIVE
