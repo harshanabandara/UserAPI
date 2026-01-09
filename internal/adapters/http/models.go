@@ -16,8 +16,8 @@ type CreateUserRequest struct {
 	FirstName string `json:"firstname" validate:"required,min=2,max=50"`
 	LastName  string `json:"lastname" validate:"required,min=2,max=50"`
 	Email     string `json:"email" validate:"required,email"`
-	Phone     string `json:"phone,omitempty" validate:"e164"`
-	Age       int    `json:"age,omitempty" validate:"gte=0,lte=150"`
+	Phone     string `json:"phone,omitempty" validate:"omitempty,e164"`
+	Age       int    `json:"age,omitempty" validate:"omitempty,gte=0,lte=150"`
 }
 
 // UserRequest The generic user request
