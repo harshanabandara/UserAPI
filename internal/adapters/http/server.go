@@ -2,25 +2,28 @@ package http
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-playground/validator/v10"
+	_ "github.com/go-playground/validator/v10"
 	httpSwagger "github.com/swaggo/http-swagger"
 	"net/http"
 	_ "userapi/app/docs"
-	"userapi/app/internal/core/domain"
 	"userapi/app/internal/core/ports"
 )
 
 type Server struct {
 	UserService ports.UserService
 	Router      *chi.Mux
+	Validator   *validator.Validate
 }
 
 func initServer(server *Server) {
 	server.Router.Get("/users", getAllUsers(server.UserService))
 	server.Router.Get("/users/{userId}", getUser(server.UserService))
-	server.Router.Post("/users", postUser(server.UserService))
+	server.Router.Post("/users", postUser(server.UserService, server.Validator))
 	server.Router.Delete("/users/{userId}", deleteUser(server.UserService))
-	server.Router.Patch("/users/{userId}", patchUser(server.UserService))
+	server.Router.Patch("/users/{userId}", patchUser(server.UserService, server.Validator))
 	// assign docs.
 	server.Router.Get("/doc", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/doc/index.html", http.StatusMovedPermanently)
@@ -108,21 +111,27 @@ func getUser(userService ports.UserService) http.HandlerFunc {
 // @Tags users
 // @Accept json
 // @Produce json
-// @Param user body UserRequest true "User payload"
+// @Param user body CreateUserRequest true "User payload"
 // @Success 201 {object} UserResponse
 // @Failure 400 {object} UserResponse
 // @Router /users [post]
-func postUser(service ports.UserService) http.HandlerFunc {
+func postUser(service ports.UserService, validator *validator.Validate) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// read the request.
-		user := domain.User{}
+		user := CreateUserRequest{}
 		err := json.NewDecoder(r.Body).Decode(&user)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			_, _ = w.Write([]byte(err.Error()))
 			return
 		}
-		createdUser, err := service.AddUser(r.Context(), user)
+		validationErr := validator.Struct(user)
+		if validationErr != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			_, _ = w.Write([]byte(validationErr.Error()))
+			return
+		}
+		createdUser, err := service.AddUser(r.Context(), user.getUser())
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte(err.Error()))
@@ -158,17 +167,26 @@ func postUser(service ports.UserService) http.HandlerFunc {
 // @Failure 400 {object} UserResponse
 // @Router /users/{user_id} [patch]
 // @Param user_id  path string true "User ID"
-func patchUser(service ports.UserService) http.HandlerFunc {
+func patchUser(service ports.UserService, validator *validator.Validate) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userID := chi.URLParam(r, "userId")
-		user := domain.User{}
+		user := UserRequest{}
+
 		err := json.NewDecoder(r.Body).Decode(&user)
+		fmt.Println("user", user)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte(err.Error()))
 			return
 		}
-		updateUser, err := service.UpdateUserByID(r.Context(), userID, user)
+		validationErr := validator.Struct(user)
+		if validationErr != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			_, _ = w.Write([]byte(validationErr.Error()))
+			return
+		}
+		fmt.Println("user", user.getUser())
+		updateUser, err := service.UpdateUserByID(r.Context(), userID, user.getUser())
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte(err.Error()))
@@ -191,7 +209,6 @@ func patchUser(service ports.UserService) http.HandlerFunc {
 // @Tags users
 // @Accept json
 // @Produce json
-// @Param user body UserRequest true "User payload"
 // @Success 200
 // @Failure 400
 // @Failure 500

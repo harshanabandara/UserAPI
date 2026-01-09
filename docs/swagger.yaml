@@ -1,17 +1,49 @@
 definitions:
-  http.UserRequest:
+  http.CreateUserRequest:
     properties:
       age:
+        maximum: 150
+        minimum: 0
         type: integer
       email:
         type: string
       firstname:
+        maxLength: 50
+        minLength: 2
         type: string
       lastname:
+        maxLength: 50
+        minLength: 2
+        type: string
+      phone:
+        type: string
+    required:
+    - email
+    - firstname
+    - lastname
+    type: object
+  http.UserRequest:
+    properties:
+      age:
+        maximum: 150
+        minimum: 0
+        type: integer
+      email:
+        type: string
+      firstname:
+        maxLength: 50
+        minLength: 2
+        type: string
+      lastname:
+        maxLength: 50
+        minLength: 2
         type: string
       phone:
         type: string
       status:
+        enum:
+        - active
+        - inactive
         type: string
     type: object
   http.UserResponse:
@@ -71,7 +103,7 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/http.UserRequest'
+          $ref: '#/definitions/http.CreateUserRequest'
       produces:
       - application/json
       responses:
@@ -92,12 +124,6 @@ paths:
       - application/json
       description: Delete a user by user id
       parameters:
-      - description: User payload
-        in: body
-        name: user
-        required: true
-        schema:
-          $ref: '#/definitions/http.UserRequest'
       - description: User ID
         in: path
         name: user_id

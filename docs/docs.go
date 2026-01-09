@@ -68,7 +68,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/http.UserRequest"
+                            "$ref": "#/definitions/http.CreateUserRequest"
                         }
                     }
                 ],
@@ -145,15 +145,6 @@ const docTemplate = `{
                 "summary": "Delete an existing user",
                 "parameters": [
                     {
-                        "description": "User payload",
-                        "name": "user",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/http.UserRequest"
-                        }
-                    },
-                    {
                         "type": "string",
                         "description": "User ID",
                         "name": "user_id",
@@ -221,26 +212,67 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "http.UserRequest": {
+        "http.CreateUserRequest": {
             "type": "object",
+            "required": [
+                "email",
+                "firstname",
+                "lastname"
+            ],
             "properties": {
                 "age": {
-                    "type": "integer"
+                    "type": "integer",
+                    "maximum": 150,
+                    "minimum": 0
                 },
                 "email": {
                     "type": "string"
                 },
                 "firstname": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 2
                 },
                 "lastname": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 2
+                },
+                "phone": {
                     "type": "string"
+                }
+            }
+        },
+        "http.UserRequest": {
+            "type": "object",
+            "properties": {
+                "age": {
+                    "type": "integer",
+                    "maximum": 150,
+                    "minimum": 0
+                },
+                "email": {
+                    "type": "string"
+                },
+                "firstname": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 2
+                },
+                "lastname": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 2
                 },
                 "phone": {
                     "type": "string"
                 },
                 "status": {
-                    "type": "string"
+                    "type": "string",
+                    "enum": [
+                        "active",
+                        "inactive"
+                    ]
                 }
             }
         },

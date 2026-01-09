@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-playground/validator/v10"
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/lib/pq"
 	"log"
@@ -50,7 +51,8 @@ func main() {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.StripSlashes)
-	var server = http.Server{UserService: userService, Router: r}
+	requestValidator := validator.New()
+	var server = http.Server{UserService: userService, Router: r, Validator: requestValidator}
 	err = server.Start()
 	if err != nil {
 		return
