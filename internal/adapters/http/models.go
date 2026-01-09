@@ -2,7 +2,7 @@ package http
 
 import "userapi/app/internal/core/domain"
 
-type UserDTO struct {
+type UserResponse struct {
 	UserID    string `json:"userId,omitempty"`
 	FirstName string `json:"firstname,omitempty"`
 	LastName  string `json:"lastname,omitempty"`
@@ -12,8 +12,17 @@ type UserDTO struct {
 	Status    string `json:"status,omitempty"`
 }
 
-func parseUserToUserDTO(user domain.User) UserDTO {
-	return UserDTO{
+type UserRequest struct {
+	FirstName string `json:"firstname,omitempty"`
+	LastName  string `json:"lastname,omitempty"`
+	Email     string `json:"email,omitempty"`
+	Phone     string `json:"phone,omitempty"`
+	Age       int    `json:"age,omitempty"`
+	Status    string `json:"status,omitempty"`
+}
+
+func parseUserToUserDTO(user domain.User) UserResponse {
+	return UserResponse{
 		UserID:    user.UserID,
 		FirstName: user.FirstName,
 		LastName:  user.LastName,

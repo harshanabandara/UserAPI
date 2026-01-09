@@ -3,7 +3,9 @@ package http
 import (
 	"encoding/json"
 	"github.com/go-chi/chi/v5"
+	httpSwagger "github.com/swaggo/http-swagger"
 	"net/http"
+	_ "userapi/app/docs"
 	"userapi/app/internal/core/domain"
 	"userapi/app/internal/core/ports"
 )
@@ -19,7 +21,11 @@ func initServer(server *Server) {
 	server.Router.Post("/users", postUser(server.UserService))
 	server.Router.Delete("/users/{userId}", deleteUser(server.UserService))
 	server.Router.Patch("/users/{userId}", patchUser(server.UserService))
-
+	// assign docs.
+	server.Router.Get("/doc", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/doc/index.html", http.StatusMovedPermanently)
+	})
+	server.Router.Get("/doc/*", httpSwagger.WrapHandler)
 }
 
 func (server *Server) Start() error {
@@ -31,13 +37,23 @@ func (server *Server) Start() error {
 	return nil
 }
 
+// GetAllUsers godoc
+//
+//	@Summary		Get all users
+//	@Description	Retrieves all users from the database.
+//	@Tags users
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{array} UserResponse
+//	@Failure		500	{object}	map[string]string
+//	@Router			/users [get]
 func getAllUsers(service ports.UserService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		users, err := service.GetAllUsers(r.Context())
 		if err != nil {
 			panic(err)
 		}
-		userDTOs := make([]UserDTO, len(users))
+		userDTOs := make([]UserResponse, len(users))
 		for i, user := range users {
 			userDTOs[i] = parseUserToUserDTO(user)
 		}
@@ -53,6 +69,17 @@ func getAllUsers(service ports.UserService) http.HandlerFunc {
 	}
 }
 
+// GetUser godoc
+//
+//	@Summary		Get all users
+//	@Description	Retrieves all users from the database.
+//	@Tags users
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{array} UserResponse
+//	@Failure		500	{object}	map[string]string
+//	@Router			/users/{user_id} [get]
+//	@Param user_id  path string true "User ID"
 func getUser(userService ports.UserService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userID := chi.URLParam(r, "userId")
@@ -75,6 +102,16 @@ func getUser(userService ports.UserService) http.HandlerFunc {
 	}
 }
 
+// CreateUser godoc
+// @Summary Create a new user
+// @Description Create a user with first name, last name, and email, and other optional data.
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param user body UserRequest true "User payload"
+// @Success 201 {object} UserResponse
+// @Failure 400 {object} UserResponse
+// @Router /users [post]
 func postUser(service ports.UserService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// read the request.
@@ -110,6 +147,17 @@ func postUser(service ports.UserService) http.HandlerFunc {
 	}
 }
 
+// UpdateUser godoc
+// @Summary Update an existing user
+// @Description Update a user with first name, last name, and email.
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param user body UserRequest true "User payload"
+// @Success 201 {object} UserResponse
+// @Failure 400 {object} UserResponse
+// @Router /users/{user_id} [patch]
+// @Param user_id  path string true "User ID"
 func patchUser(service ports.UserService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userID := chi.URLParam(r, "userId")
@@ -126,9 +174,9 @@ func patchUser(service ports.UserService) http.HandlerFunc {
 			_, _ = w.Write([]byte(err.Error()))
 			return
 		}
-
+		userDTO := parseUserToUserDTO(updateUser)
 		w.WriteHeader(http.StatusOK)
-		blob, _ := json.Marshal(updateUser)
+		blob, _ := json.Marshal(userDTO)
 		w.Header().Set("Content-Type", "application/json")
 		_, err = w.Write(blob)
 		if err != nil {
@@ -137,6 +185,18 @@ func patchUser(service ports.UserService) http.HandlerFunc {
 	}
 }
 
+// DeleteUser godoc
+// @Summary Delete an existing user
+// @Description Delete a user by user id
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param user body UserRequest true "User payload"
+// @Success 200
+// @Failure 400
+// @Failure 500
+// @Router /users/{user_id} [delete]
+// @Param user_id  path string true "User ID"
 func deleteUser(service ports.UserService) http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {

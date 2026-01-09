@@ -16,6 +16,10 @@ import (
 	"userapi/app/internal/core/ports"
 )
 
+// @title User Management API
+// @version 1.0
+// @description This api allow to create, modify,delete, and retrieve user records.
+
 func getEnv(key, fallback string) string {
 	if value := os.Getenv(key); value != "" {
 		return value
