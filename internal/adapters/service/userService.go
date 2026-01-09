@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"userapi/app/internal/core/domain"
 	"userapi/app/internal/core/ports"
 )
@@ -33,7 +34,7 @@ func (u *UserServiceImpl) GetUserById(ctx context.Context, userId string) (domai
 	}
 	user, err := u.UserRepository.RetrieveUser(ctx, userId)
 	if err != nil {
-		return domain.User{}, err
+		return domain.User{}, fmt.Errorf("user with id %s not found : %w", userId, err)
 	}
 	return user, nil
 }
@@ -44,7 +45,7 @@ func (u *UserServiceImpl) UpdateUserByID(ctx context.Context, userId string, use
 	}
 	user, err := u.UserRepository.UpdateUser(ctx, userId, user)
 	if err != nil {
-		return domain.User{}, err
+		return domain.User{}, fmt.Errorf("could not update the user with id %s : %w", userId, err)
 	}
 	return user, nil
 }
@@ -55,7 +56,7 @@ func (u *UserServiceImpl) DeleteUserByID(ctx context.Context, userId string) err
 	}
 	err := u.UserRepository.DeleteUser(ctx, userId)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not delete the user with id %s : %w", userId, err)
 	}
 	return nil
 }
@@ -63,7 +64,7 @@ func (u *UserServiceImpl) DeleteUserByID(ctx context.Context, userId string) err
 func (u *UserServiceImpl) GetAllUsers(ctx context.Context) ([]domain.User, error) {
 	users, err := u.UserRepository.RetrieveAllUsers(ctx)
 	if err != nil {
-		return make([]domain.User, 0), err
+		return make([]domain.User, 0), fmt.Errorf("could not retrieve the users:  %w", err)
 	}
 	return users, nil
 }
