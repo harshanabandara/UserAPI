@@ -3,16 +3,15 @@ FROM golang:1.25-alpine AS builder
 WORKDIR /src
 
 COPY go.mod ./
-COPY go.mod.sum ./
+COPY go.sum ./
 
-RUN cd /src && go mod tidy
+RUN go mod download
 
 COPY ./cmd ./cmd
 COPY ./internal ./internal
+COPY ./docs ./docs
 
-WORKDIR /cmd/api-server
-
-RUN CGO_ENABLED=0 go build -o /bin/server .
+RUN CGO_ENABLED=0 go build -o /bin/server ./cmd/api-server
 
 FROM alpine:3.19
 
