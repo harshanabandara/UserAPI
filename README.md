@@ -1,11 +1,11 @@
 ### Building and running the UserAPI server
-#### postgresql instance
-To run the postgresql with docker compose follow the steps given below. 
+#### PostgreSQL instance
+To run the PostgreSQL with docker compose follow the steps given below. 
 ```bash
 cd infra/postgres
 docker compose up -d
 ```
-This will run a postgresql db instance. If the password needs to be changed, change the value in the 
+This will run a PostgreSQL db instance. If the password needs to be changed, change the value in the 
 `password.txt`
 
 When you're ready, start your application by running:
@@ -63,5 +63,9 @@ if you want to push as you build, run below command.
 ```bash
 docker buildx build --platform linux/amd64,linux/arm64 -t $dockerhub_username/userapi:latest --push .
 ```
-
+#### check for linting issues
+run below command in the root. 
+```
+golangci-lint run ./...
+```
 

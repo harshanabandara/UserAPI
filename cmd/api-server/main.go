@@ -3,11 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
-	"github.com/go-playground/validator/v10"
-	"github.com/jackc/pgx/v5/pgxpool"
-	_ "github.com/lib/pq"
 	"log"
 	"os"
 	"userapi/app/internal/adapters/db"
@@ -15,6 +10,12 @@ import (
 	"userapi/app/internal/adapters/http"
 	"userapi/app/internal/adapters/service"
 	"userapi/app/internal/core/ports"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-playground/validator/v10"
+	"github.com/jackc/pgx/v5/pgxpool"
+	_ "github.com/lib/pq"
 )
 
 // @title User Management API

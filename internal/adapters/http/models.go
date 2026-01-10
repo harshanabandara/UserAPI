@@ -59,9 +59,10 @@ func (request UserRequest) getUser() domain.User {
 	user.Email = request.Email
 	user.Phone = request.Phone
 	user.Age = request.Age
-	if request.Status == "active" {
+	switch request.Status {
+	case "active":
 		user.Status = domain.ACTIVE
-	} else if request.Status == "inactive" {
+	case "inactive":
 		user.Status = domain.INACTIVE
 	}
 	return user

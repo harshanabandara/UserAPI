@@ -2,10 +2,11 @@ package db
 
 import (
 	"context"
-	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 	"userapi/app/internal/adapters/db/user"
 	"userapi/app/internal/core/domain"
+
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type SqlcRepository struct {

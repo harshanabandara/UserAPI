@@ -1,9 +1,3 @@
--- DO $$
---     BEGIN
---         IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'user_status') THEN
---             CREATE TYPE user_status AS ENUM ('ACTIVE', 'INACTIVE');
---         END IF;
---     END$$;
 CREATE TYPE user_status AS ENUM ('ACTIVE', 'INACTIVE');
 CREATE TABLE IF NOT EXISTS  users (
                                       user_id   UUID PRIMARY KEY DEFAULT gen_random_uuid(),

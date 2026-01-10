@@ -4,13 +4,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/go-chi/chi/v5"
-	"github.com/go-playground/validator/v10"
-	_ "github.com/go-playground/validator/v10"
-	httpSwagger "github.com/swaggo/http-swagger"
 	"net/http"
 	_ "userapi/app/docs"
 	"userapi/app/internal/core/ports"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-playground/validator/v10"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 type Server struct {
@@ -109,6 +109,7 @@ func getUser(userService ports.UserService) http.HandlerFunc {
 		}
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
+
 		_, _ = w.Write(blob)
 	}
 }
