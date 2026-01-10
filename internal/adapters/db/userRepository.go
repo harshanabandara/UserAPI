@@ -114,10 +114,6 @@ func (u *UserRepositoryImpl) DeleteUser(ctx context.Context, userId string) erro
 	return nil
 }
 
-func (u *UserRepositoryImpl) Init(ctx context.Context) error {
-	return nil
-}
-
 func (u *UserRepositoryImpl) RetrieveAllUsers(ctx context.Context) ([]domain.User, error) {
 	_ = ctx
 	query := "SELECT user_id, first_name, last_name, email, age, status FROM users"

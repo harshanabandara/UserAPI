@@ -77,7 +77,3 @@ func (m *MockUserRepository) RetrieveAllUsers(ctx context.Context) ([]domain.Use
 	}
 	return users, nil
 }
-
-func (m *MockUserRepository) Init(ctx context.Context) error {
-	return nil
-}

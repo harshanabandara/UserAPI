@@ -16,9 +16,6 @@ type SqlcRepository struct {
 func NewSqlcRepository(q *sqlc.Queries) *SqlcRepository {
 	return &SqlcRepository{q: q}
 }
-func (s *SqlcRepository) Init(ctx context.Context) error {
-	return nil
-}
 
 func (s *SqlcRepository) CreateUser(ctx context.Context, user domain.User) (domain.User, error) {
 	params := parseUserToCreateUserParams(user)
