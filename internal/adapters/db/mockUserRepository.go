@@ -21,6 +21,7 @@ func generateUUID() string {
 }
 
 func (m *MockUserRepository) RetrieveUser(ctx context.Context, s string) (domain.User, error) {
+	_ = ctx
 	if user, ok := m.users[s]; ok {
 		return user, nil
 	}
@@ -28,6 +29,7 @@ func (m *MockUserRepository) RetrieveUser(ctx context.Context, s string) (domain
 }
 
 func (m *MockUserRepository) CreateUser(ctx context.Context, user domain.User) (domain.User, error) {
+	_ = ctx
 	userId := generateUUID()
 	user.UserID = userId
 	m.users[userId] = user
@@ -36,6 +38,7 @@ func (m *MockUserRepository) CreateUser(ctx context.Context, user domain.User) (
 
 func (m *MockUserRepository) UpdateUser(ctx context.Context, s string, user domain.User) (domain.User, error) {
 	//get the user.
+	_ = ctx
 	currentUser, ok := m.users[s]
 	if !ok {
 		// Not trying to create a new user.
@@ -61,11 +64,13 @@ func (m *MockUserRepository) UpdateUser(ctx context.Context, s string, user doma
 }
 
 func (m *MockUserRepository) DeleteUser(ctx context.Context, s string) error {
+	_ = ctx
 	delete(m.users, s)
 	return nil
 }
 
 func (m *MockUserRepository) RetrieveAllUsers(ctx context.Context) ([]domain.User, error) {
+	_ = ctx
 	users := make([]domain.User, len(m.users))
 	for _, user := range m.users {
 		users = append(users, user)

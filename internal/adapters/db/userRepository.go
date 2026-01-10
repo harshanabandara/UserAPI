@@ -18,6 +18,7 @@ func NewSQLUserRepository(db *sql.DB) *UserRepositoryImpl {
 }
 
 func (u *UserRepositoryImpl) RetrieveUser(ctx context.Context, userID string) (domain.User, error) {
+	_ = ctx
 	query := "SELECT user_id, first_name, last_name, email, age, status FROM users WHERE user_id = $1"
 
 	var user domain.User
@@ -39,6 +40,7 @@ func (u *UserRepositoryImpl) RetrieveUser(ctx context.Context, userID string) (d
 }
 
 func (u *UserRepositoryImpl) CreateUser(ctx context.Context, user domain.User) (domain.User, error) {
+	_ = ctx
 	query := "INSERT INTO users (first_name, last_name, email, age, phone) VALUES ($1, $2, $3, $4, $5) RETURNING user_id"
 	var id string
 
@@ -51,11 +53,12 @@ func (u *UserRepositoryImpl) CreateUser(ctx context.Context, user domain.User) (
 }
 
 func (u *UserRepositoryImpl) UpdateUser(ctx context.Context, userId string, user domain.User) (domain.User, error) {
+	_ = ctx
 	if userId == "" {
 		return domain.User{}, errors.New("user id is required")
 	}
-	fields := []string{}
-	vals := []interface{}{}
+	var fields []string
+	var vals []interface{}
 	if user.FirstName != "" {
 		fields = append(fields, fmt.Sprintf("first_name = $%d", len(fields)+1))
 		vals = append(vals, user.FirstName)
@@ -102,6 +105,7 @@ func (u *UserRepositoryImpl) UpdateUser(ctx context.Context, userId string, user
 }
 
 func (u *UserRepositoryImpl) DeleteUser(ctx context.Context, userId string) error {
+	_ = ctx
 	query := "DELETE FROM users WHERE user_id = $1"
 	_, err := u.db.Exec(query, userId)
 	if err != nil {
@@ -115,6 +119,7 @@ func (u *UserRepositoryImpl) Init(ctx context.Context) error {
 }
 
 func (u *UserRepositoryImpl) RetrieveAllUsers(ctx context.Context) ([]domain.User, error) {
+	_ = ctx
 	query := "SELECT user_id, first_name, last_name, email, age, status FROM users"
 	rows, err := u.db.Query(query)
 	if err != nil {

@@ -21,6 +21,7 @@ func generateUUID() string {
 }
 
 func (m MockUserServiceImpl) AddUser(ctx context.Context, user domain.User) (domain.User, error) {
+	_ = ctx
 	userId := generateUUID()
 	user.UserID = userId
 	m.users[userId] = user
@@ -28,6 +29,7 @@ func (m MockUserServiceImpl) AddUser(ctx context.Context, user domain.User) (dom
 }
 
 func (m MockUserServiceImpl) GetUserById(ctx context.Context, s string) (domain.User, error) {
+	_ = ctx
 	user, ok := m.users[s]
 	if !ok {
 		return user, errors.New("user not found")
@@ -36,6 +38,7 @@ func (m MockUserServiceImpl) GetUserById(ctx context.Context, s string) (domain.
 }
 
 func (m MockUserServiceImpl) UpdateUserByID(ctx context.Context, s string, user domain.User) (domain.User, error) {
+	_ = ctx
 	currUser, ok := m.users[s]
 	if !ok {
 		return user, errors.New("user not found")
@@ -63,11 +66,13 @@ func (m MockUserServiceImpl) UpdateUserByID(ctx context.Context, s string, user 
 }
 
 func (m MockUserServiceImpl) DeleteUserByID(ctx context.Context, s string) error {
+	_ = ctx
 	delete(m.users, s)
 	return nil
 }
 
 func (m MockUserServiceImpl) GetAllUsers(ctx context.Context) ([]domain.User, error) {
+	_ = ctx
 	users := make([]domain.User, len(m.users))
 	for _, user := range m.users {
 		users = append(users, user)
