@@ -69,3 +69,5 @@ run below command in the root.
 golangci-lint run ./...
 ```
 
+#### Docker compose deployment
+- Navigate to the `infra/deploy` directory and run `docker compose up -d`

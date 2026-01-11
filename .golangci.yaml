@@ -1,0 +1,12 @@
+version: "2"
+output:
+  formats:
+    json :
+      path: ./golangci-lint/report.json
+    text:
+      path: ./golangci-lint/report.txt
+      print-linter-name: true
+      print-issued-lines: true
+      colors: true
+severity:
+  default: debug
