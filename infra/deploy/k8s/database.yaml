@@ -1,0 +1,98 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  labels:
+    app: userapi
+spec:
+  ports:
+    - port: 5432
+  selector:
+    app: userapi
+    tier: postgres
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pv-claim
+  labels:
+    app: userapi
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: userapi-postgres
+  labels:
+    app: userapi
+spec:
+  selector:
+    matchLabels:
+      app: userapi
+      tier: postgres
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: userapi
+        tier: postgres
+    spec:
+      containers:
+        - image: postgres:17
+          name: postgres
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: password
+                  name: postgres-pass
+            - name: POSTGRES_DB
+              value: userapi
+          ports:
+            - containerPort: 5432
+              name: postgres
+          volumeMounts:
+            - name: postgres-persistent-storage
+              mountPath: /var/lib/postgresql/data
+            - name: postgres-init
+              mountPath: /docker-entrypoint-initdb.d/init.sql
+              subPath: init.sql
+
+      volumes:
+        - name: postgres-persistent-storage
+          persistentVolumeClaim:
+            claimName: postgres-pv-claim
+        - name: postgres-init
+          configMap:
+            name: postgres-init
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init
+data:
+  init.sql: |
+    CREATE TYPE user_status AS ENUM ('ACTIVE', 'INACTIVE');
+    CREATE TABLE IF NOT EXISTS users
+    (
+        user_id    UUID PRIMARY KEY      DEFAULT gen_random_uuid(),
+        
+        first_name VARCHAR(50)  NOT NULL,
+        last_name  VARCHAR(50)  NOT NULL,
+        email      VARCHAR(255) NOT NULL,
+        phone      VARCHAR(20),
+        age        INTEGER,
+        status     user_status  NOT NULL DEFAULT 'ACTIVE',
+        
+        CONSTRAINT first_name_len CHECK (char_length(first_name) BETWEEN 2 AND 50),
+        CONSTRAINT last_name_len CHECK (char_length(last_name) BETWEEN 2 AND 50),
+        CONSTRAINT email_format CHECK (email ~* '^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$'),
+        CONSTRAINT phone_format CHECK (phone IS NULL OR phone ~ '^(?:\+94|0)[0-9]{9}$'),
+        CONSTRAINT age_positive CHECK (age IS NULL OR age > 0)
+    );

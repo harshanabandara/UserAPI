@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: userapi
+  labels:
+    app: userapi
+spec:
+  type: NodePort
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+      nodePort: 30001
+  selector:
+    app: userapi
+    tier: server
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: userapi-server
+  labels:
+    role: userapi
+spec:
+  selector:
+    matchLabels:
+      app: userapi
+      tier: server
+  template:
+    metadata:
+      labels:
+        app: userapi
+        tier: server
+    spec:
+      containers:
+        - image: developernextdoor/userapi
+          name: userapi
+          env:
+            - name: PG_HOST
+              value: postgres
+          ports:
+            - containerPort: 8080
