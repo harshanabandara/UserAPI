@@ -1,0 +1,4 @@
+secretGenerator:
+- name: postgres-pass
+  literals:
+  - password=PASSWORD_HERE

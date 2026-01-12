@@ -71,3 +71,16 @@ golangci-lint run ./...
 
 #### Docker compose deployment
 - Navigate to the `infra/deploy` directory and run `docker compose up -d`
+
+#### Kubernetes deployment with microk8s
+1. Checkout the GitHub files to a directory.
+    ```bash
+    mkdir k8s
+    cd k8s
+    curl -o database.yaml https://raw.githubusercontent.com/harshanabandara/UserAPI/main/infra/deploy/k8s/database.yaml
+    curl -o server.yaml https://raw.githubusercontent.com/harshanabandara/UserAPI/main/infra/deploy/k8s/server.yaml
+    curl -o kustomization.yaml https://raw.githubusercontent.com/harshanabandara/UserAPI/main/infra/deploy/k8s/kustomization.yaml
+    ```
+2. change the kustomization.yaml and add the password. 
+3. run `microk8s kubectl apply -k ./` to deply the services.
+4. access the api usinsg [IP]:30001/users
