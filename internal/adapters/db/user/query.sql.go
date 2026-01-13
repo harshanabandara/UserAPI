@@ -150,44 +150,7 @@ func (q *Queries) RetrieveUserById(ctx context.Context, userID uuid.UUID) (User,
 	return i, err
 }
 
-const updateUserById = `-- name: UpdateUserById :exec
-
-UPDATE users
-SET
-    first_name = COALESCE($1, first_name),
-    last_name  = COALESCE($2, last_name),
-    email      = COALESCE($3, email),
-    age        = COALESCE($4, age),
-    phone      = COALESCE($5, phone),
-    status     = COALESCE($6, status)
-WHERE user_id = $7
-RETURNING user_id, first_name, last_name, email, phone, age, status
-`
-
-type UpdateUserByIdParams struct {
-	FirstName string
-	LastName  string
-	Email     string
-	Age       pgtype.Int4
-	Phone     pgtype.Text
-	Status    NullUserStatus
-	UserID    uuid.UUID
-}
-
-func (q *Queries) UpdateUserById(ctx context.Context, arg UpdateUserByIdParams) error {
-	_, err := q.db.Exec(ctx, updateUserById,
-		arg.FirstName,
-		arg.LastName,
-		arg.Email,
-		arg.Age,
-		arg.Phone,
-		arg.Status,
-		arg.UserID,
-	)
-	return err
-}
-
-const updateUserPartial = `-- name: UpdateUserPartial :one
+const updateUserById = `-- name: UpdateUserById :one
 UPDATE users
 SET
     first_name = COALESCE($1, first_name),
@@ -200,7 +163,7 @@ WHERE user_id = $7
 RETURNING user_id, first_name, last_name, email, age, phone, status
 `
 
-type UpdateUserPartialParams struct {
+type UpdateUserByIdParams struct {
 	FirstName pgtype.Text
 	LastName  pgtype.Text
 	Email     pgtype.Text
@@ -210,7 +173,7 @@ type UpdateUserPartialParams struct {
 	UserID    uuid.UUID
 }
 
-type UpdateUserPartialRow struct {
+type UpdateUserByIdRow struct {
 	UserID    uuid.UUID
 	FirstName string
 	LastName  string
@@ -220,8 +183,8 @@ type UpdateUserPartialRow struct {
 	Status    NullUserStatus
 }
 
-func (q *Queries) UpdateUserPartial(ctx context.Context, arg UpdateUserPartialParams) (UpdateUserPartialRow, error) {
-	row := q.db.QueryRow(ctx, updateUserPartial,
+func (q *Queries) UpdateUserById(ctx context.Context, arg UpdateUserByIdParams) (UpdateUserByIdRow, error) {
+	row := q.db.QueryRow(ctx, updateUserById,
 		arg.FirstName,
 		arg.LastName,
 		arg.Email,
@@ -230,7 +193,7 @@ func (q *Queries) UpdateUserPartial(ctx context.Context, arg UpdateUserPartialPa
 		arg.Status,
 		arg.UserID,
 	)
-	var i UpdateUserPartialRow
+	var i UpdateUserByIdRow
 	err := row.Scan(
 		&i.UserID,
 		&i.FirstName,

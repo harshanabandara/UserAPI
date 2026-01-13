@@ -59,7 +59,7 @@ func (s *SqlcRepository) UpdateUser(ctx context.Context, userId string, user dom
 	if err != nil {
 		return domain.User{}, err
 	}
-	params := sqlc.UpdateUserPartialParams{}
+	params := sqlc.UpdateUserByIdParams{}
 	params.UserID = userUuid
 	if user.FirstName != "" {
 		params.FirstName = pgtype.Text{String: user.FirstName, Valid: true}
@@ -106,7 +106,7 @@ func (s *SqlcRepository) UpdateUser(ctx context.Context, userId string, user dom
 			Valid:      false,
 		}
 	}
-	row, err := s.q.UpdateUserPartial(ctx, params)
+	row, err := s.q.UpdateUserById(ctx, params)
 	if err != nil {
 		return domain.User{}, err
 	}
