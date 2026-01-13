@@ -11,8 +11,6 @@ import (
 	"userapi/app/internal/adapters/service"
 	"userapi/app/internal/core/ports"
 
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-playground/validator/v10"
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/lib/pq"
@@ -46,14 +44,9 @@ func main() {
 	queries := sqlc.New(pool)
 	var userRepository ports.UserRepository = db.NewSqlcRepository(queries)
 
-	var userService ports.UserService = service.NewUserService(userRepository)
-	r := chi.NewRouter()
-	r.Use(middleware.RequestID)
-	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
-	r.Use(middleware.StripSlashes)
 	requestValidator := validator.New()
-	var server = http.Server{UserService: userService, Router: r, Validator: requestValidator}
+	var userService ports.UserService = service.NewUserService(userRepository, requestValidator)
+	var server = http.NewServer(userService, requestValidator)
 	err = server.Start()
 	if err != nil {
 		return

@@ -9,6 +9,7 @@ import (
 	"userapi/app/internal/core/ports"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-playground/validator/v10"
 	httpSwagger "github.com/swaggo/http-swagger"
 )
@@ -30,6 +31,15 @@ func initServer(server *Server) {
 		http.Redirect(w, r, "/doc/index.html", http.StatusMovedPermanently)
 	})
 	server.Router.Get("/doc/*", httpSwagger.WrapHandler)
+}
+
+func NewServer(userService ports.UserService, validator *validator.Validate) *Server {
+	router := chi.NewRouter()
+	router.Use(middleware.RequestID)
+	router.Use(middleware.Logger)
+	router.Use(middleware.Recoverer)
+	router.Use(middleware.StripSlashes)
+	return &Server{UserService: userService, Router: router, Validator: validator}
 }
 
 func (server *Server) Start() error {
