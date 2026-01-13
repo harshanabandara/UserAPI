@@ -40,11 +40,11 @@ func (u *UserStatus) String() string {
 }
 
 type User struct {
-	UserID    string     `json:"userId,omitempty"`
-	FirstName string     `json:"firstName,omitempty"`
-	LastName  string     `json:"lastName,omitempty"`
-	Email     string     `json:"email,omitempty"`
-	Phone     string     `json:"phone,omitempty"`
-	Age       int        `json:"age,omitempty"`
-	Status    UserStatus `json:"status,omitempty"`
+	UserID    string     `json:"userId,omitempty" validate:"omitempty,uuid"`
+	FirstName string     `json:"firstName,omitempty" validate:"omitempty,min=2,max=50"`
+	LastName  string     `json:"lastName,omitempty" validate:"omitempty,min=2,max=50"`
+	Email     string     `json:"email,omitempty" validate:"omitempty,email"`
+	Phone     string     `json:"phone,omitempty" validate:"omitempty,e164"`
+	Age       int        `json:"age,omitempty" validate:"omitempty,gte=0,lte=150"`
+	Status    UserStatus `json:"status,omitempty" validate:"omitempty,oneof=1 2"`
 }
