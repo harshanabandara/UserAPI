@@ -332,13 +332,13 @@ func TestUserServiceImpl_AddUser(t *testing.T) {
 	})
 	t.Run("Get users return correct data", func(t *testing.T) {
 		users := []domain.User{
-			domain.User{
+			{
 				UserID:    uuid.New().String(),
 				FirstName: "John",
 				LastName:  "Doe",
 				Email:     "john.doe@mail.com",
 			},
-			domain.User{
+			{
 				UserID:    uuid.New().String(),
 				FirstName: "Jane",
 				LastName:  "Doe",
