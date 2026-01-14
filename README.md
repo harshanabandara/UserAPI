@@ -82,5 +82,5 @@ golangci-lint run ./...
     curl -o kustomization.yaml https://raw.githubusercontent.com/harshanabandara/UserAPI/main/infra/deploy/k8s/kustomization.yaml
     ```
 2. change the kustomization.yaml and add the password. 
-3. run `microk8s kubectl apply -k ./` to deply the services.
-4. access the api usinsg [IP]:30001/users
+3. run `microk8s kubectl apply -k ./` to deploy the services.
+4. access the api using [IP]:30001/users
