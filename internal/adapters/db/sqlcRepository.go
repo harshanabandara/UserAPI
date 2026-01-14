@@ -2,19 +2,48 @@ package db
 
 import (
 	"context"
+	"fmt"
+	"log"
+	"os"
 	"userapi/app/internal/adapters/db/user"
 	"userapi/app/internal/core/domain"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type SqlcRepository struct {
-	q *sqlc.Queries
+	q    *sqlc.Queries
+	pool *pgxpool.Pool
 }
 
-func NewSqlcRepository(q *sqlc.Queries) *SqlcRepository {
-	return &SqlcRepository{q: q}
+func getEnv(key, fallback string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return fallback
+}
+func NewSqlcRepository() *SqlcRepository {
+	host := getEnv("PG_HOST", "localhost")
+	port := getEnv("PG_PORT", "5432")
+	user := getEnv("PG_USER", "postgres")
+	password := getEnv("PG_PASSWORD", "yaalalabs")
+	databaseName := getEnv("PG_DATABASE", "userapi")
+	sslmode := getEnv("PG_SSLMODE", "disable")
+	connStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s", host, port, user, password, databaseName, sslmode)
+	pool, err := pgxpool.New(context.Background(), connStr)
+	if err != nil {
+		log.Fatal(err)
+		return nil
+	}
+	queries := sqlc.New(pool)
+	return &SqlcRepository{q: queries, pool: pool}
+}
+
+func (s *SqlcRepository) Close() error {
+	s.pool.Close()
+	return nil
 }
 
 func (s *SqlcRepository) CreateUser(ctx context.Context, user domain.User) (domain.User, error) {

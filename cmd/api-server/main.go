@@ -1,18 +1,13 @@
 package main
 
 import (
-	"context"
-	"fmt"
 	"log"
-	"os"
 	"userapi/app/internal/adapters/db"
-	"userapi/app/internal/adapters/db/user"
 	"userapi/app/internal/adapters/http"
 	"userapi/app/internal/adapters/service"
 	"userapi/app/internal/core/ports"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/lib/pq"
 )
 
@@ -20,36 +15,26 @@ import (
 // @version 1.0
 // @description This api allow to create, modify,delete, and retrieve user records.
 
-func getEnv(key, fallback string) string {
-	if value := os.Getenv(key); value != "" {
-		return value
-	}
-	return fallback
-}
 func main() {
-	host := getEnv("PG_HOST", "localhost")
-	port := getEnv("PG_PORT", "5432")
-	user := getEnv("PG_USER", "postgres")
-	password := getEnv("PG_PASSWORD", "yaalalabs")
-	databaseName := getEnv("PG_DATABASE", "userapi")
-	sslmode := getEnv("PG_SSLMODE", "disable")
-
-	connStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s", host, port, user, password, databaseName, sslmode)
-	pool, err := pgxpool.New(context.Background(), connStr)
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
-	defer pool.Close()
-	queries := sqlc.New(pool)
-	var userRepository ports.UserRepository = db.NewSqlcRepository(queries)
-
+	var userRepository ports.UserRepository = db.NewSqlcRepository()
+	defer func(userRepository ports.UserRepository) {
+		err := userRepository.Close()
+		if err != nil {
+			log.Fatal("could not close the user repository", err)
+		}
+	}(userRepository)
 	requestValidator := validator.New()
 	var userService ports.UserService = service.NewUserService(userRepository, requestValidator)
 	var server = http.NewServer(userService, requestValidator)
-	err = server.Start()
+	err := server.Start()
 	if err != nil {
+		log.Fatal("could not start the server", err)
 		return
 	}
-
+	defer func(server *http.Server) {
+		err := server.Stop()
+		if err != nil {
+			log.Fatal("could not stop the server", err)
+		}
+	}(server)
 }

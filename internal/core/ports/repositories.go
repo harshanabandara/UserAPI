@@ -11,4 +11,5 @@ type UserRepository interface {
 	RetrieveAllUsers(context.Context) ([]domain.User, error)
 	UpdateUser(context.Context, string, domain.User) (domain.User, error)
 	DeleteUser(context.Context, string) error
+	Close() error
 }

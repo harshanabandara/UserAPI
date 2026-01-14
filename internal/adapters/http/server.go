@@ -51,6 +51,10 @@ func (server *Server) Start() error {
 	return nil
 }
 
+func (server *Server) Stop() error {
+	return server.Stop()
+}
+
 // GetAllUsers godoc
 //
 //	@Summary		Get all users
