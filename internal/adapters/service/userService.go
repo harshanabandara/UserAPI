@@ -7,16 +7,14 @@ import (
 
 	"userapi/app/internal/core/domain"
 	"userapi/app/internal/core/ports"
-
-	"github.com/go-playground/validator/v10"
 )
 
 type UserServiceImpl struct {
 	UserRepository ports.UserRepository
-	Validator      *validator.Validate
+	Validator      ports.Validator
 }
 
-func NewUserService(userRepository ports.UserRepository, validator *validator.Validate) *UserServiceImpl {
+func NewUserService(userRepository ports.UserRepository, validator ports.Validator) *UserServiceImpl {
 	return &UserServiceImpl{UserRepository: userRepository, Validator: validator}
 }
 

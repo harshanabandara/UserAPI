@@ -9,19 +9,18 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
-	"github.com/go-playground/validator/v10"
-	httpSwagger "github.com/swaggo/http-swagger"
-
 	_ "userapi/app/docs"
 	"userapi/app/internal/core/ports"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 type Server struct {
 	UserService ports.UserService
 	Router      *chi.Mux
-	Validator   *validator.Validate
+	Validator   ports.Validator
 	httpServer  *http.Server
 }
 
@@ -38,7 +37,7 @@ func initServer(server *Server) {
 	server.Router.Get("/doc/*", httpSwagger.WrapHandler)
 }
 
-func NewServer(userService ports.UserService, validator *validator.Validate) *Server {
+func NewServer(userService ports.UserService, validator ports.Validator) *Server {
 	router := chi.NewRouter()
 	router.Use(middleware.RequestID)
 	router.Use(middleware.Logger)
@@ -154,7 +153,7 @@ func getUser(userService ports.UserService) http.HandlerFunc {
 // @Success 201 {object} UserResponse
 // @Failure 400 {object} UserResponse
 // @Router /users [post]
-func postUser(service ports.UserService, validator *validator.Validate) http.HandlerFunc {
+func postUser(service ports.UserService, validator ports.Validator) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// read the request.
 		user := CreateUserRequest{}
@@ -215,7 +214,7 @@ func postUser(service ports.UserService, validator *validator.Validate) http.Han
 // @Failure 400 {object} UserResponse
 // @Router /users/{user_id} [patch]
 // @Param user_id  path string true "User ID"
-func patchUser(service ports.UserService, validator *validator.Validate) http.HandlerFunc {
+func patchUser(service ports.UserService, validator ports.Validator) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userID := chi.URLParam(r, "userId")
 		user := UserRequest{}

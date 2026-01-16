@@ -20,8 +20,9 @@ func main() {
 	var userRepository ports.UserRepository = db.NewPostgresRepository()
 	defer userRepository.Close()
 	requestValidator := validator.New()
-	var userService ports.UserService = service.NewUserService(userRepository, requestValidator)
-	server := http.NewServer(userService, requestValidator)
+	var validator ports.Validator = requestValidator
+	var userService ports.UserService = service.NewUserService(userRepository, validator)
+	server := http.NewServer(userService, validator)
 	err := server.Start()
 	defer server.Stop()
 	if err != nil {
