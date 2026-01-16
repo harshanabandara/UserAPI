@@ -12,15 +12,15 @@ import (
 
 type UserServiceImpl struct {
 	UserRepository ports.UserRepository
-	Validator      validator.Validate
+	Validator      *validator.Validate
 }
 
 func NewUserService(UserRepository ports.UserRepository, validator *validator.Validate) *UserServiceImpl {
-	return &UserServiceImpl{UserRepository: UserRepository, Validator: *validator}
+	return &UserServiceImpl{UserRepository: UserRepository, Validator: validator}
 }
 
 func (u *UserServiceImpl) AddUser(ctx context.Context, user domain.User) (domain.User, error) {
-	validationErr := u.Validator.StructCtx(ctx, user)
+	validationErr := u.Validator.Struct(user)
 	if validationErr != nil {
 		return domain.User{}, fmt.Errorf("could not add the user. %w", validationErr)
 	}
@@ -32,7 +32,7 @@ func (u *UserServiceImpl) AddUser(ctx context.Context, user domain.User) (domain
 	if err != nil {
 		return newUser, err
 	}
-	validationErr = u.Validator.StructCtx(ctx, newUser)
+	validationErr = u.Validator.Struct(newUser)
 	if validationErr != nil {
 		return newUser, fmt.Errorf("could not add the user. %w", validationErr)
 	}
@@ -50,9 +50,9 @@ func (u *UserServiceImpl) GetUserById(ctx context.Context, userId string) (domai
 	if err != nil {
 		return domain.User{}, fmt.Errorf("user with id %s not found : %w", userId, err)
 	}
-	validationErr := u.Validator.StructCtx(ctx, user)
+	validationErr := u.Validator.Struct(user)
 	if validationErr != nil {
-		return domain.User{}, fmt.Errorf("could not validate the retrieved user. %w", validationErr)
+		return domain.User{}, fmt.Errorf("could not utils the retrieved user. %w", validationErr)
 	}
 	if userId != user.UserID {
 		return domain.User{}, errors.New(fmt.Sprintf("invalid user id returned. expected: %s returned %s", userId, user.UserID))
@@ -65,7 +65,7 @@ func (u *UserServiceImpl) UpdateUserByID(ctx context.Context, userId string, use
 	if uuidErr != nil {
 		return domain.User{}, errors.New("user id is not valid")
 	}
-	validationErr := u.Validator.StructCtx(ctx, user)
+	validationErr := u.Validator.Struct(user)
 	if validationErr != nil {
 		return domain.User{}, fmt.Errorf("could not add the user. %w", validationErr)
 	}
@@ -101,7 +101,7 @@ func (u *UserServiceImpl) GetAllUsers(ctx context.Context) ([]domain.User, error
 	}
 	validationErr := u.Validator.Var(users, "omitempty,dive")
 	if validationErr != nil {
-		return make([]domain.User, 0), fmt.Errorf("could not validate the retrieved users. %w", validationErr)
+		return make([]domain.User, 0), fmt.Errorf("could not utils the retrieved users. %w", validationErr)
 	}
 	return users, nil
 }
