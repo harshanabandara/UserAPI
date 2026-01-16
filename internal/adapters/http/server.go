@@ -1,24 +1,28 @@
 package http
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
-	_ "userapi/app/docs"
-	"userapi/app/internal/core/ports"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-playground/validator/v10"
 	httpSwagger "github.com/swaggo/http-swagger"
+
+	_ "userapi/app/docs"
+	"userapi/app/internal/core/ports"
 )
 
 type Server struct {
 	UserService ports.UserService
 	Router      *chi.Mux
 	Validator   *validator.Validate
+	httpServer  *http.Server
 }
 
 func initServer(server *Server) {
@@ -45,18 +49,26 @@ func NewServer(userService ports.UserService, validator *validator.Validate) *Se
 
 func (server *Server) Start() error {
 	initServer(server)
-	err := http.ListenAndServe(":8080", server.Router)
+	srv := &http.Server{
+		Addr:         ":8080",
+		Handler:      server.Router,
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		IdleTimeout:  120 * time.Second,
+	}
+	err := srv.ListenAndServe()
 	if err != nil {
 		slog.Error("could not start the server", err)
 		return err
 	}
 	slog.Info("starting the server on port 8080")
+	server.httpServer = srv
 	return nil
 }
 
 func (server *Server) Stop() error {
 	slog.Info("stopping server")
-	return server.Stop()
+	return server.httpServer.Shutdown(context.Background())
 }
 
 // GetAllUsers godoc
