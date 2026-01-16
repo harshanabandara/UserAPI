@@ -1,7 +1,8 @@
 package main
 
 import (
-	"log"
+	"log/slog"
+
 	"userapi/app/internal/adapters/db"
 	"userapi/app/internal/adapters/http"
 	"userapi/app/internal/adapters/service"
@@ -20,11 +21,11 @@ func main() {
 	defer userRepository.Close()
 	requestValidator := validator.New()
 	var userService ports.UserService = service.NewUserService(userRepository, requestValidator)
-	var server = http.NewServer(userService, requestValidator)
+	server := http.NewServer(userService, requestValidator)
 	err := server.Start()
+	defer server.Stop()
 	if err != nil {
-		log.Fatal("could not start the server", err)
+		slog.Error("Could not start the server", "error", err)
 		return
 	}
-	defer server.Stop()
 }

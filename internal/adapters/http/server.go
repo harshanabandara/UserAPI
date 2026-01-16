@@ -266,7 +266,6 @@ func patchUser(service ports.UserService, validator *validator.Validate) http.Ha
 // @Router /users/{user_id} [delete]
 // @Param user_id  path string true "User ID"
 func deleteUser(service ports.UserService) http.HandlerFunc {
-
 	return func(w http.ResponseWriter, r *http.Request) {
 		userID := chi.URLParam(r, "userId")
 		err := service.DeleteUserByID(r.Context(), userID)
