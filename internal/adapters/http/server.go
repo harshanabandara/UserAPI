@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	_ "userapi/app/docs"
 	"userapi/app/internal/core/ports"
@@ -46,12 +47,15 @@ func (server *Server) Start() error {
 	initServer(server)
 	err := http.ListenAndServe(":8080", server.Router)
 	if err != nil {
+		slog.Error("could not start the server", err)
 		return err
 	}
+	slog.Info("starting the server on port 8080")
 	return nil
 }
 
 func (server *Server) Stop() error {
+	slog.Info("stopping server")
 	return server.Stop()
 }
 
@@ -70,7 +74,7 @@ func getAllUsers(service ports.UserService) http.HandlerFunc {
 		users, err := service.GetAllUsers(r.Context())
 		if err != nil {
 			serverErr := fmt.Errorf("error getting all users: %w", err)
-			fmt.Println(serverErr)
+			slog.Error(serverErr.Error())
 			http.Error(w, errors.New("could not retrieve the users").Error(), http.StatusInternalServerError)
 			return
 		}
@@ -81,7 +85,7 @@ func getAllUsers(service ports.UserService) http.HandlerFunc {
 		blob, err := json.Marshal(users)
 		if err != nil {
 			marshalErr := fmt.Errorf("error marshalling users: %w", err)
-			fmt.Println(marshalErr)
+			slog.Error(marshalErr.Error())
 			http.Error(w, errors.New("could not retrieve the users").Error(), http.StatusInternalServerError)
 			return
 		}
@@ -107,7 +111,7 @@ func getUser(userService ports.UserService) http.HandlerFunc {
 		user, err := userService.GetUserById(r.Context(), userID)
 		if err != nil {
 			serverErr := fmt.Errorf("could not retrieve the user: %w", err)
-			fmt.Println(serverErr)
+			slog.Error(serverErr.Error())
 			notFoundErr := fmt.Errorf("could not retrieve the user %s", userID)
 			w.WriteHeader(http.StatusNotFound)
 			_, _ = w.Write([]byte(notFoundErr.Error()))
@@ -117,7 +121,7 @@ func getUser(userService ports.UserService) http.HandlerFunc {
 		blob, err := json.Marshal(userDTO)
 		if err != nil {
 			marshalErr := fmt.Errorf("error marshalling user: %w", err)
-			fmt.Println(marshalErr)
+			slog.Error(marshalErr.Error())
 			http.Error(w, errors.New("could not retrieve the user").Error(), http.StatusInternalServerError)
 			return
 		}
@@ -146,24 +150,23 @@ func postUser(service ports.UserService, validator *validator.Validate) http.Han
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			decodeError := fmt.Errorf("could not decode the request body: %w", err)
-			fmt.Println(decodeError)
+			slog.Error(decodeError.Error())
 			_, _ = w.Write([]byte(decodeError.Error()))
 			return
 		}
 		validationErr := validator.Struct(user)
 		if validationErr != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			validationErr2 := fmt.Errorf("could not validate the request: %w", validationErr)
-			fmt.Println(validationErr2)
-			_, _ = w.Write([]byte(validationErr2.Error()))
+			validationErr = fmt.Errorf("could not validate the request: %w", validationErr)
+			slog.Error(validationErr.Error())
+			_, _ = w.Write([]byte(validationErr.Error()))
 			return
 		}
 		createdUser, err := service.AddUser(r.Context(), user.getUser())
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			userErr := fmt.Errorf("could not add the user: %w", err)
-			fmt.Println(userErr)
-
+			slog.Error(userErr.Error())
 			_, _ = w.Write([]byte(errors.New("could not add the user").Error()))
 			return
 		}
@@ -171,13 +174,14 @@ func postUser(service ports.UserService, validator *validator.Validate) http.Han
 		if createdUser.UserID == "" {
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte(errors.New("could not create user").Error()))
+			slog.Error("could not create user, but user service did not return an error")
 			return
 		}
 		parsedUser := parseUserToUserDTO(createdUser)
 		blob, err := json.Marshal(parsedUser)
 		if err != nil {
 			parsingErr := fmt.Errorf("could not parse the user: %w", err)
-			fmt.Println(parsingErr)
+			slog.Error(parsingErr.Error())
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte(errors.New("could not retrieve the user").Error()))
 			return
@@ -208,12 +212,13 @@ func patchUser(service ports.UserService, validator *validator.Validate) http.Ha
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			decodeError := fmt.Errorf("could not decode the request body: %w", err)
-			fmt.Println(decodeError)
+			slog.Error(decodeError.Error())
 			_, _ = w.Write([]byte(decodeError.Error()))
 			return
 		}
 		validationErr := validator.Struct(user)
 		if validationErr != nil {
+			slog.Error(validationErr.Error())
 			w.WriteHeader(http.StatusBadRequest)
 			_, _ = w.Write([]byte(validationErr.Error()))
 			return
@@ -222,7 +227,7 @@ func patchUser(service ports.UserService, validator *validator.Validate) http.Ha
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			userErr := fmt.Errorf("could not update user: %w", err)
-			fmt.Println(userErr)
+			slog.Error(userErr.Error())
 			_, _ = w.Write([]byte(errors.New("could not update user").Error()))
 			return
 		}
