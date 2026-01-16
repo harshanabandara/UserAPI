@@ -260,7 +260,7 @@ func deleteUser(service ports.UserService) http.HandlerFunc {
 		err := service.DeleteUserByID(r.Context(), userID)
 		if err != nil {
 			deleteErr := fmt.Errorf("could not delete user: %w", err)
-			fmt.Println(deleteErr)
+			slog.Error(deleteErr.Error())
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte(errors.New("could not delete user").Error()))
 			return
