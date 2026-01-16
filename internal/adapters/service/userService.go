@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"userapi/app/internal/core/domain"
 	"userapi/app/internal/core/ports"
 
@@ -15,8 +16,8 @@ type UserServiceImpl struct {
 	Validator      *validator.Validate
 }
 
-func NewUserService(UserRepository ports.UserRepository, validator *validator.Validate) *UserServiceImpl {
-	return &UserServiceImpl{UserRepository: UserRepository, Validator: validator}
+func NewUserService(userRepository ports.UserRepository, validator *validator.Validate) *UserServiceImpl {
+	return &UserServiceImpl{UserRepository: userRepository, Validator: validator}
 }
 
 func (u *UserServiceImpl) AddUser(ctx context.Context, user domain.User) (domain.User, error) {
@@ -55,7 +56,7 @@ func (u *UserServiceImpl) GetUserById(ctx context.Context, userId string) (domai
 		return domain.User{}, fmt.Errorf("could not utils the retrieved user. %w", validationErr)
 	}
 	if userId != user.UserID {
-		return domain.User{}, errors.New(fmt.Sprintf("invalid user id returned. expected: %s returned %s", userId, user.UserID))
+		return domain.User{}, fmt.Errorf("invalid user id returned. expected: %s returned %s", userId, user.UserID)
 	}
 	return user, nil
 }

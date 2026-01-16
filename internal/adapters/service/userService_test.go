@@ -12,6 +12,7 @@ import (
 	"errors"
 	"log"
 	"testing"
+
 	"userapi/app/internal/core/domain"
 
 	"github.com/go-playground/validator/v10"
@@ -54,7 +55,7 @@ func TestUserServiceImpl_AddUser(t *testing.T) {
 	ctx := context.Background()
 	entityValidator := validator.New()
 
-	//Add User
+	// Add User
 	t.Run("Empty User for validation", func(t *testing.T) {
 		user := domain.User{}
 		repo := MockUserRepository{}
@@ -198,7 +199,7 @@ func TestUserServiceImpl_AddUser(t *testing.T) {
 		}
 	})
 
-	//Get User
+	// Get User
 	t.Run("Get user with empty user id", func(t *testing.T) {
 		repo := MockUserRepository{}
 		service := NewUserService(repo, entityValidator)
@@ -295,7 +296,7 @@ func TestUserServiceImpl_AddUser(t *testing.T) {
 		}
 	})
 
-	//Get All Users
+	// Get All Users
 	t.Run("Get users database error", func(t *testing.T) {
 		repo := MockUserRepository{}
 		repo.RetrieveAllUsersFn = func(ctx context.Context) ([]domain.User, error) {
@@ -359,7 +360,7 @@ func TestUserServiceImpl_AddUser(t *testing.T) {
 		}
 	})
 
-	//Update User
+	// Update User
 	t.Run("Update user with empty user id", func(t *testing.T) {
 		repo := MockUserRepository{}
 		userId := ""
@@ -417,7 +418,7 @@ func TestUserServiceImpl_AddUser(t *testing.T) {
 		}
 	})
 
-	//Delete user
+	// Delete user
 	t.Run("Delete user database error", func(t *testing.T) {
 		repo := MockUserRepository{}
 		userId := uuid.New().String()

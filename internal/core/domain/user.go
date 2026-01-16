@@ -21,7 +21,7 @@ var stringToStatusMap = map[string]UserStatus{
 }
 
 func (u *UserStatus) UnmarshalJSON(bytes []byte) error {
-	//Convert "status" : "active" to UserStatus
+	// Convert "status" : "active" to UserStatus
 	var str string
 	err := json.Unmarshal(bytes, &str)
 	if err != nil {

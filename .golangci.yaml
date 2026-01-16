@@ -1,4 +1,41 @@
 version: "2"
+linters:
+  enable:
+    - asasalint
+    - asciicheck
+    - bodyclose
+    - decorder
+    - dogsled
+    - durationcheck
+    - errname
+    - errorlint
+    - goconst
+    - gocritic
+    - gomoddirectives
+    - goprintffuncname
+    - gosec
+    - importas
+    - loggercheck
+    - makezero
+    - mirror
+    - misspell
+    - nakedret
+    - nilerr
+    - nolintlint
+    - nosprintfhostport
+    - promlinter
+    - reassign
+    - testableexamples
+    - thelper
+    - tparallel
+    - unconvert
+    - usestdlibvars
+    - whitespace
+formatters:
+  enable:
+    - gci
+    - gofumpt
+    - gofmt
 output:
   formats:
     json :
@@ -10,3 +47,5 @@ output:
       colors: true
 severity:
   default: debug
+run:
+  fix: true

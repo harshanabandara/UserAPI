@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+
 	"userapi/app/internal/adapters/db/user"
 	"userapi/app/internal/core/domain"
 
@@ -112,7 +113,7 @@ func (repository *PostgresRepository) UpdateUser(ctx context.Context, userId str
 	}
 	if user.Age != 0 {
 		params.Age = pgtype.Int4{
-			Int32: int32(user.Age),
+			Int32: int32(user.Age), //nolint:gosec
 			Valid: true,
 		}
 	} else {
@@ -216,7 +217,7 @@ func parseUserToCreateUserParams(user domain.User) sqlc.CreateUserParams {
 	}
 	if user.Age != 0 {
 		params.Age = pgtype.Int4{
-			Int32: int32(user.Age), //check endian impact.
+			Int32: int32(user.Age), //nolint:gosec    //check endian impact.
 			Valid: true,
 		}
 	} else {
