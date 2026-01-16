@@ -46,6 +46,10 @@ func (m MockUserRepository) DeleteUser(ctx context.Context, s string) error {
 	return m.DeleteUserFn(ctx, s)
 }
 
+func (m MockUserRepository) Close() error {
+	return nil
+}
+
 func TestUserServiceImpl_AddUser(t *testing.T) {
 	ctx := context.Background()
 	entityValidator := validator.New()
@@ -328,7 +332,6 @@ func TestUserServiceImpl_AddUser(t *testing.T) {
 		if err == nil {
 			log.Fatal("User service should not return invalid data", usrList)
 		}
-
 	})
 	t.Run("Get users return correct data", func(t *testing.T) {
 		users := []domain.User{

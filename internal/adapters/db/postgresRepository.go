@@ -13,7 +13,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type SqlcRepository struct {
+type PostgresRepository struct {
 	q    *sqlc.Queries
 	pool *pgxpool.Pool
 }
@@ -24,7 +24,7 @@ func getEnv(key, fallback string) string {
 	}
 	return fallback
 }
-func NewSqlcRepository() *SqlcRepository {
+func NewPostgresRepository() *PostgresRepository {
 	host := getEnv("PG_HOST", "localhost")
 	port := getEnv("PG_PORT", "5432")
 	user := getEnv("PG_USER", "postgres")
@@ -38,17 +38,17 @@ func NewSqlcRepository() *SqlcRepository {
 		return nil
 	}
 	queries := sqlc.New(pool)
-	return &SqlcRepository{q: queries, pool: pool}
+	return &PostgresRepository{q: queries, pool: pool}
 }
 
-func (s *SqlcRepository) Close() error {
-	s.pool.Close()
+func (repository *PostgresRepository) Close() error {
+	repository.pool.Close()
 	return nil
 }
 
-func (s *SqlcRepository) CreateUser(ctx context.Context, user domain.User) (domain.User, error) {
+func (repository *PostgresRepository) CreateUser(ctx context.Context, user domain.User) (domain.User, error) {
 	params := parseUserToCreateUserParams(user)
-	newUser, err := s.q.CreateUser(ctx, params)
+	newUser, err := repository.q.CreateUser(ctx, params)
 	if err != nil {
 		return domain.User{}, err
 	}
@@ -58,12 +58,12 @@ func (s *SqlcRepository) CreateUser(ctx context.Context, user domain.User) (doma
 	return user, nil
 }
 
-func (s *SqlcRepository) RetrieveUser(ctx context.Context, userId string) (domain.User, error) {
+func (repository *PostgresRepository) RetrieveUser(ctx context.Context, userId string) (domain.User, error) {
 	userUuid, err := uuid.Parse(userId)
 	if err != nil {
 		return domain.User{}, err
 	}
-	user, err := s.q.RetrieveUserById(ctx, userUuid)
+	user, err := repository.q.RetrieveUserById(ctx, userUuid)
 	if err != nil {
 		return domain.User{}, err
 	}
@@ -71,8 +71,8 @@ func (s *SqlcRepository) RetrieveUser(ctx context.Context, userId string) (domai
 	return returnUser, nil
 }
 
-func (s *SqlcRepository) RetrieveAllUsers(ctx context.Context) ([]domain.User, error) {
-	allUsers, err := s.q.RetrieveAllUsers(ctx)
+func (repository *PostgresRepository) RetrieveAllUsers(ctx context.Context) ([]domain.User, error) {
+	allUsers, err := repository.q.RetrieveAllUsers(ctx)
 	if err != nil {
 		return []domain.User{}, err
 	}
@@ -83,7 +83,7 @@ func (s *SqlcRepository) RetrieveAllUsers(ctx context.Context) ([]domain.User, e
 	return users, nil
 }
 
-func (s *SqlcRepository) UpdateUser(ctx context.Context, userId string, user domain.User) (domain.User, error) {
+func (repository *PostgresRepository) UpdateUser(ctx context.Context, userId string, user domain.User) (domain.User, error) {
 	userUuid, err := uuid.Parse(userId)
 	if err != nil {
 		return domain.User{}, err
@@ -135,7 +135,7 @@ func (s *SqlcRepository) UpdateUser(ctx context.Context, userId string, user dom
 			Valid:      false,
 		}
 	}
-	row, err := s.q.UpdateUserById(ctx, params)
+	row, err := repository.q.UpdateUserById(ctx, params)
 	if err != nil {
 		return domain.User{}, err
 	}
@@ -151,12 +151,12 @@ func (s *SqlcRepository) UpdateUser(ctx context.Context, userId string, user dom
 	return returnUser, nil
 }
 
-func (s *SqlcRepository) DeleteUser(ctx context.Context, userId string) error {
+func (repository *PostgresRepository) DeleteUser(ctx context.Context, userId string) error {
 	userUuid, err := uuid.Parse(userId)
 	if err != nil {
 		return err
 	}
-	err = s.q.DeleteUserById(ctx, userUuid)
+	err = repository.q.DeleteUserById(ctx, userUuid)
 	if err != nil {
 		return err
 	}

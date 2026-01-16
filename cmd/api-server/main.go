@@ -16,13 +16,8 @@ import (
 // @description This api allow to create, modify,delete, and retrieve user records.
 
 func main() {
-	var userRepository ports.UserRepository = db.NewSqlcRepository()
-	defer func(userRepository ports.UserRepository) {
-		err := userRepository.Close()
-		if err != nil {
-			log.Fatal("could not close the user repository", err)
-		}
-	}(userRepository)
+	var userRepository ports.UserRepository = db.NewPostgresRepository()
+	defer userRepository.Close()
 	requestValidator := validator.New()
 	var userService ports.UserService = service.NewUserService(userRepository, requestValidator)
 	var server = http.NewServer(userService, requestValidator)
@@ -31,10 +26,5 @@ func main() {
 		log.Fatal("could not start the server", err)
 		return
 	}
-	defer func(server *http.Server) {
-		err := server.Stop()
-		if err != nil {
-			log.Fatal("could not stop the server", err)
-		}
-	}(server)
+	defer server.Stop()
 }

@@ -16,6 +16,10 @@ func NewMockUserRepository() *MockUserRepository {
 	return &MockUserRepository{users: make(map[string]domain.User)}
 }
 
+func (m *MockUserRepository) Close() {
+	return
+}
+
 func generateUUID() string {
 	return uuid.New().String()
 }
