@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"errors"
+
 	"userapi/app/internal/core/domain"
 
 	"github.com/google/uuid"
@@ -17,7 +18,6 @@ func NewMockUserRepository() *MockUserRepository {
 }
 
 func (m *MockUserRepository) Close() {
-	return
 }
 
 func generateUUID() string {
@@ -41,7 +41,7 @@ func (m *MockUserRepository) CreateUser(ctx context.Context, user domain.User) (
 }
 
 func (m *MockUserRepository) UpdateUser(ctx context.Context, s string, user domain.User) (domain.User, error) {
-	//get the user.
+	// get the user.
 	_ = ctx
 	currentUser, ok := m.users[s]
 	if !ok {

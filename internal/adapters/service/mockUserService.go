@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+
 	"userapi/app/internal/core/domain"
 
 	"github.com/google/uuid"
